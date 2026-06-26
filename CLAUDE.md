@@ -16,7 +16,7 @@ Pipeline stages: Generate (LLM) → Ground (web verification) → Cost (price es
 - **Database**: PostgreSQL (Neon) for MVP, Neo4j when graph queries demand it
 - **Pipeline**: Python + Claude API for meal generation
 - **Market**: Canada-first (Ontario grocery prices)
-- **Images**: AI-generated for MVP
+- **Images**: Together AI (FLUX.1) for MVP
 
 ## Repo Structure
 

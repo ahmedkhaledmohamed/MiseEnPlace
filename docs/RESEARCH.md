@@ -255,7 +255,7 @@ This graph structure enables queries that flat databases cannot:
 | **Image Storage** | Vercel Blob or Cloudflare R2 | Cost-effective image hosting |
 | **Search** | PostgreSQL full-text search → Algolia later | Start simple, upgrade when needed |
 | **Offline Pipeline** | Python scripts + Claude API | Batch generation, grounding, cost estimation |
-| **Image Generation** | DALL-E 3 / Flux / Midjourney API | High-quality food photography style |
+| **Image Generation** | Together AI (FLUX.1) | High-quality food photography via FLUX model |
 | **Hosting** | Vercel (API + web) | Familiar stack, low ops burden |
 
 ### Platform Strategy
@@ -558,7 +558,7 @@ These suggestions are graph traversals: find meals with high ingredient overlap 
 - [ ] Build grounding pipeline (web search verification)
 - [ ] Build cost estimation pipeline (Canadian grocery prices)
 - [ ] Generate first 200 meals, grounded and costed
-- [ ] Generate images for all meals (DALL-E 3 or Flux)
+- [ ] Generate images for all meals (Together AI / FLUX.1)
 - [ ] Build and populate the graph
 - [ ] Validate pipeline output quality (cook-test 10 recipes)
 

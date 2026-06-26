@@ -1,8 +1,8 @@
 """
 MiseEnPlace Image Generator — Stage 4 of the offline pipeline.
 
-Generates food photography-style hero images for meals using OpenAI's
-DALL-E 3 API. Builds rich prompts from meal metadata to produce
+Generates food photography-style hero images for meals using Together AI's
+FLUX.1 model. Builds rich prompts from meal metadata to produce
 appetizing, consistent imagery.
 
 Usage:
@@ -10,7 +10,7 @@ Usage:
     python -m images.image_generator --input output/meals/sample.json --dry-run
     python -m images.image_generator --input output/costed/ --all --limit 10
 
-Requires OPENAI_API_KEY environment variable.
+Requires TOGETHER_API_KEY environment variable.
 """
 
 import argparse
@@ -58,7 +58,7 @@ DEFAULT_STYLING = "ceramic plate, natural lighting, overhead flat-lay angle"
 
 
 def build_image_prompt(meal):
-    """Build a DALL-E prompt from meal metadata."""
+    """Build an image generation prompt from meal metadata."""
     name = meal.get("name", "dish")
     description = meal.get("description", "")
     cuisine = meal.get("cuisine", "")
@@ -99,20 +99,20 @@ def meal_id(meal):
 
 
 def generate_image(meal, api_key):
-    """Generate an image for a meal using DALL-E 3."""
+    """Generate an image for a meal using Together AI's FLUX.1 model."""
     prompt = build_image_prompt(meal)
 
     request_body = json.dumps({
-        "model": "dall-e-3",
+        "model": "black-forest-labs/FLUX.1-schnell-Free",
         "prompt": prompt,
         "n": 1,
-        "size": "1024x1024",
-        "quality": "standard",
-        "style": "natural",
+        "width": 1024,
+        "height": 1024,
+        "steps": 4,
     }).encode()
 
     req = urllib.request.Request(
-        "https://api.openai.com/v1/images/generations",
+        "https://api.together.xyz/v1/images/generations",
         data=request_body,
         headers={
             "Content-Type": "application/json",
@@ -123,15 +123,25 @@ def generate_image(meal, api_key):
     with urllib.request.urlopen(req) as resp:
         result = json.loads(resp.read())
 
-    image_url = result["data"][0]["url"]
-    revised_prompt = result["data"][0].get("revised_prompt", prompt)
+    image_data = result["data"][0]
+    image_url = image_data.get("url")
 
-    return image_url, revised_prompt
+    if not image_url and image_data.get("b64_json"):
+        import base64
+        b64 = image_data["b64_json"]
+        return b64, prompt, True
+
+    return image_url, prompt, False
 
 
-def download_image(url, output_path):
-    """Download an image from URL to local path."""
-    urllib.request.urlretrieve(url, output_path)
+def save_image(data, output_path, is_base64=False):
+    """Save an image from URL or base64 data to local path."""
+    if is_base64:
+        import base64
+        with open(output_path, "wb") as f:
+            f.write(base64.b64decode(data))
+    else:
+        urllib.request.urlretrieve(data, output_path)
 
 
 def load_meals(input_path):
@@ -197,8 +207,8 @@ def generate_batch(meals, api_key, dry_run=False):
             continue
 
         try:
-            image_url, revised_prompt = generate_image(meal, api_key)
-            download_image(image_url, image_path)
+            image_data, prompt_used, is_base64 = generate_image(meal, api_key)
+            save_image(image_data, image_path, is_base64=is_base64)
             stats["generated"] += 1
             print(f"  [OK] Saved: {image_path.name}")
 
@@ -207,8 +217,7 @@ def generate_batch(meals, api_key, dry_run=False):
                 "image": {
                     "id": mid,
                     "path": str(image_path),
-                    "prompt": build_image_prompt(meal),
-                    "revised_prompt": revised_prompt,
+                    "prompt": prompt_used,
                     "status": "generated",
                 },
             })
@@ -272,9 +281,9 @@ def main():
 
     api_key = None
     if not args.dry_run:
-        api_key = os.environ.get("OPENAI_API_KEY")
+        api_key = os.environ.get("TOGETHER_API_KEY")
         if not api_key:
-            print("Error: OPENAI_API_KEY environment variable not set", file=sys.stderr)
+            print("Error: TOGETHER_API_KEY environment variable not set", file=sys.stderr)
             sys.exit(1)
 
     meals = load_meals(args.input)
