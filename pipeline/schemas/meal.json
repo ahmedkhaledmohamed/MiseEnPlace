@@ -1,0 +1,170 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Meal",
+  "type": "object",
+  "required": [
+    "name",
+    "description",
+    "cuisine",
+    "difficulty",
+    "prep_time_minutes",
+    "cook_time_minutes",
+    "total_time_minutes",
+    "servings",
+    "seasons",
+    "dietary_tags",
+    "ingredients",
+    "steps",
+    "equipment",
+    "meal_type"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string",
+      "minLength": 10
+    },
+    "cuisine": {
+      "type": "string",
+      "enum": [
+        "Middle Eastern",
+        "Mediterranean",
+        "East Asian",
+        "South Asian",
+        "Southeast Asian",
+        "Latin American",
+        "Mexican",
+        "Italian",
+        "French",
+        "American",
+        "African",
+        "Caribbean",
+        "Eastern European",
+        "Scandinavian",
+        "British",
+        "Korean",
+        "Japanese",
+        "Chinese",
+        "Thai",
+        "Vietnamese",
+        "Indian",
+        "Turkish",
+        "Greek",
+        "Spanish",
+        "Fusion"
+      ]
+    },
+    "difficulty": {
+      "type": "string",
+      "enum": ["easy", "medium", "advanced", "project"]
+    },
+    "prep_time_minutes": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "cook_time_minutes": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "total_time_minutes": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "servings": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "seasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["spring", "summer", "fall", "winter", "all"]
+      },
+      "minItems": 1
+    },
+    "dietary_tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "vegan",
+          "vegetarian",
+          "gluten-free",
+          "dairy-free",
+          "nut-free",
+          "keto",
+          "paleo",
+          "halal",
+          "kosher",
+          "low-carb",
+          "high-protein"
+        ]
+      }
+    },
+    "meal_type": {
+      "type": "string",
+      "enum": ["breakfast", "lunch", "dinner", "snack", "dessert", "side"]
+    },
+    "ingredients": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "quantity", "unit", "category"],
+        "properties": {
+          "name": { "type": "string" },
+          "quantity": { "type": "number", "minimum": 0 },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "g", "kg", "ml", "L", "cup", "tbsp", "tsp",
+              "oz", "lb", "each", "bunch", "clove", "slice",
+              "pinch", "to taste"
+            ]
+          },
+          "is_optional": { "type": "boolean", "default": false },
+          "category": {
+            "type": "string",
+            "enum": [
+              "protein", "vegetable", "fruit", "grain", "dairy",
+              "spice", "oil-fat", "sauce-condiment", "herb",
+              "legume", "nut-seed", "sweetener", "liquid", "other"
+            ]
+          },
+          "prep_note": { "type": "string" }
+        }
+      },
+      "minItems": 2
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["order", "instruction"],
+        "properties": {
+          "order": { "type": "integer", "minimum": 1 },
+          "instruction": { "type": "string", "minLength": 5 },
+          "duration_minutes": { "type": "integer", "minimum": 0 }
+        }
+      },
+      "minItems": 1
+    },
+    "equipment": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "tips": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "variations": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "source_inspiration": {
+      "type": "string"
+    }
+  }
+}
