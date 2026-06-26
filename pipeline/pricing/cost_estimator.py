@@ -41,6 +41,20 @@ UNIT_CONVERSIONS = {
     ("clove", "clove"): 1,
     ("bunch", "bunch"): 1,
     ("each", "each"): 1,
+    ("head", "each"): 1,
+    ("sprig", "each"): 1,
+    ("stalk", "each"): 1,
+    ("piece", "each"): 1,
+    ("can", "each"): 1,
+    ("package", "each"): 1,
+    ("sheet", "each"): 1,
+    ("stick", "each"): 1,
+    ("fillet", "each"): 1,
+    ("rack", "each"): 1,
+    ("loaf", "each"): 1,
+    ("block", "each"): 1,
+    ("cm", "kg"): 0.01,
+    ("inch", "kg"): 0.025,
 }
 
 
