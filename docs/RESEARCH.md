@@ -198,15 +198,16 @@ This graph structure enables queries that flat databases cannot:
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│                    CLIENT (iOS/Android)               │
+│  WEB MVP (Next.js)  │  iOS (SwiftUI)  │  Android    │
+│                     │                 │  (Compose)   │
 │  ┌──────────┐  ┌──────────┐  ┌───────────────────┐  │
 │  │ Feed View │  │ Meal     │  │ Planner +         │  │
 │  │ (scroll)  │  │ Detail   │  │ Grocery List      │  │
 │  └──────────┘  └──────────┘  └───────────────────┘  │
 │                       │                               │
-│              Local Cache / SQLite                     │
+│         Local Cache (SQLite on native, SWR on web)   │
 └───────────────────────┬─────────────────────────────┘
-                        │ API (REST or GraphQL)
+                        │ REST API
 ┌───────────────────────┴─────────────────────────────┐
 │                    BACKEND API                        │
 │  ┌──────────┐  ┌──────────┐  ┌───────────────────┐  │
@@ -242,26 +243,25 @@ This graph structure enables queries that flat databases cannot:
 └─────────────────────────────────────────────────────┘
 ```
 
-### Tech Stack (Recommended for MVP)
+### Tech Stack
 
 | Layer | Technology | Rationale |
 |-------|-----------|-----------|
-| **Mobile Client** | React Native (Expo) or Swift/Kotlin | Expo for speed-to-market; native for polish. Decision depends on team. |
-| **Backend API** | Next.js API routes on Vercel | Fast to build, serverless, Ahmed knows the stack |
+| **Web MVP** | Next.js on Vercel | Test graph quality and UX before native investment |
+| **iOS** | SwiftUI + SwiftData | Native performance, local-first with sync |
+| **Android** | Jetpack Compose + Room | Native performance, local-first with sync |
+| **Backend API** | Next.js API routes on Vercel | Fast to build, serverless |
 | **Database** | PostgreSQL (Neon on Vercel Marketplace) | Relational with JSON support, graph queries via joins for MVP |
 | **Image Storage** | Vercel Blob or Cloudflare R2 | Cost-effective image hosting |
 | **Search** | PostgreSQL full-text search → Algolia later | Start simple, upgrade when needed |
 | **Offline Pipeline** | Python scripts + Claude API | Batch generation, grounding, cost estimation |
 | **Image Generation** | DALL-E 3 / Flux / Midjourney API | High-quality food photography style |
-| **Hosting** | Vercel (API + web) + Expo EAS (mobile) | Familiar stack, low ops burden |
+| **Hosting** | Vercel (API + web) | Familiar stack, low ops burden |
 
-### Alternative: Mobile-First Native
+### Platform Strategy
 
-If polish and performance are priorities over speed:
-- **iOS**: SwiftUI + SwiftData (local-first)
-- **Android**: Jetpack Compose + Room
-- **Backend**: Same (Next.js on Vercel)
-- **Sync**: Simple REST API for pulling meal data, plans stored locally
+1. **Web MVP** — Next.js app to validate graph quality, content, and core UX (plan → grocery list loop)
+2. **Native mobile** — SwiftUI (iOS) and Jetpack Compose (Android). No cross-platform frameworks. Native gives us the scroll performance, offline support, and polish the Instagram-like experience demands.
 
 ---
 
@@ -594,10 +594,11 @@ These suggestions are graph traversals: find meals with high ingredient overlap 
 - [ ] Local ingredient sourcing
 
 ### Phase 5: Native Mobile (Parallel or post-web)
-- [ ] iOS app (SwiftUI)
-- [ ] Android app (Compose)
+- [ ] iOS app (SwiftUI + SwiftData, local-first)
+- [ ] Android app (Jetpack Compose + Room, local-first)
 - [ ] Offline support (download meal data for cooking without internet)
 - [ ] Cooking mode (screen stays on, large text, step-by-step)
+- [ ] Sync layer between local DB and backend API
 
 ---
 
