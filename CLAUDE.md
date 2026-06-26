@@ -14,7 +14,7 @@ Pipeline stages: Generate (LLM) → Ground (web verification) → Cost (price es
 
 - **Platform**: Web MVP (Next.js on Vercel) to test graph quality; native mobile is SwiftUI (iOS) + Jetpack Compose (Android) — no cross-platform frameworks
 - **Database**: PostgreSQL (Neon) for MVP, Neo4j when graph queries demand it
-- **Pipeline**: Python + Claude API for meal generation
+- **Pipeline**: Python + Together AI (Llama 3.1 70B for text, FLUX.1 for images)
 - **Market**: Canada-first (Ontario grocery prices)
 - **Images**: Together AI (FLUX.1) for MVP
 

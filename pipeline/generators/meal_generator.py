@@ -1,7 +1,7 @@
 """
 MiseEnPlace Meal Generator — Stage 1 of the offline pipeline.
 
-Generates structured meal records using Claude API, validated against
+Generates structured meal records using Together AI, validated against
 the meal JSON schema. Outputs one JSON file per batch into pipeline/output/meals/.
 
 Usage:
@@ -9,7 +9,7 @@ Usage:
     python -m generators.meal_generator --batch-file generators/batches/sample.json
     python -m generators.meal_generator --diverse --count 20
 
-Requires ANTHROPIC_API_KEY environment variable.
+Requires TOGETHER_API_KEY environment variable.
 """
 
 import argparse
@@ -20,8 +20,8 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-import anthropic
 import jsonschema
+from openai import OpenAI
 
 SCHEMA_PATH = Path(__file__).parent.parent / "schemas" / "meal.json"
 OUTPUT_DIR = Path(__file__).parent.parent / "output" / "meals"
@@ -106,17 +106,22 @@ def validate_meal(meal, schema):
         return False, str(e.message)
 
 
-def generate_meals(client, cuisine, meal_type, difficulty, count, schema):
+DEFAULT_MODEL = "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo"
+
+
+def generate_meals(client, cuisine, meal_type, difficulty, count, schema, model=None):
     prompt = build_generation_prompt(cuisine, meal_type, difficulty, count)
 
-    response = client.messages.create(
-        model="claude-sonnet-4-20250514",
+    response = client.chat.completions.create(
+        model=model or DEFAULT_MODEL,
         max_tokens=8192,
-        system=SYSTEM_PROMPT,
-        messages=[{"role": "user", "content": prompt}],
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": prompt},
+        ],
     )
 
-    text = response.content[0].text.strip()
+    text = response.choices[0].message.content.strip()
     if text.startswith("```"):
         text = text.split("\n", 1)[1]
         if text.endswith("```"):
@@ -217,13 +222,14 @@ def run_batch_file(client, schema, batch_file):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate structured meal recipes using Claude API")
+    parser = argparse.ArgumentParser(description="Generate structured meal recipes using Together AI")
     parser.add_argument("--cuisine", type=str, help="Cuisine to generate (e.g. 'Italian')")
     parser.add_argument("--meal-type", type=str, default="dinner", choices=MEAL_TYPES)
     parser.add_argument("--difficulty", type=str, default="medium", choices=DIFFICULTIES)
     parser.add_argument("--count", type=int, default=5, help="Number of meals to generate")
     parser.add_argument("--diverse", action="store_true", help="Generate diverse meals across all cuisines/types")
     parser.add_argument("--batch-file", type=str, help="Path to batch specification JSON file")
+    parser.add_argument("--model", type=str, default=DEFAULT_MODEL, help="Together AI model to use")
     parser.add_argument("--dry-run", action="store_true", help="Print the prompt without calling the API")
     args = parser.parse_args()
 
@@ -238,12 +244,12 @@ def main():
         print(prompt)
         return
 
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
+    api_key = os.environ.get("TOGETHER_API_KEY")
     if not api_key:
-        print("Error: ANTHROPIC_API_KEY environment variable not set", file=sys.stderr)
+        print("Error: TOGETHER_API_KEY environment variable not set", file=sys.stderr)
         sys.exit(1)
 
-    client = anthropic.Anthropic(api_key=api_key)
+    client = OpenAI(api_key=api_key, base_url="https://api.together.xyz/v1")
 
     if args.batch_file:
         meals = run_batch_file(client, schema, args.batch_file)
