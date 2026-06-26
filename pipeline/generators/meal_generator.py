@@ -77,7 +77,7 @@ Return a JSON array of meal objects. Each meal must conform exactly to this sche
 - ingredients: array of objects with:
   - name: string
   - quantity: number
-  - unit: one of "g"|"kg"|"ml"|"L"|"cup"|"tbsp"|"tsp"|"oz"|"lb"|"each"|"bunch"|"clove"|"slice"|"pinch"|"to taste"
+  - unit: one of "g"|"kg"|"ml"|"L"|"cup"|"tbsp"|"tsp"|"oz"|"lb"|"each"|"bunch"|"clove"|"slice"|"pinch"|"to taste"|"head"|"sprig"|"stalk"|"piece"|"can"|"package"|"sheet"|"stick"|"fillet"|"rack"|"loaf"|"block"|"cm"|"inch"
   - is_optional: boolean
   - category: one of "protein"|"vegetable"|"fruit"|"grain"|"dairy"|"spice"|"oil-fat"|"sauce-condiment"|"herb"|"legume"|"nut-seed"|"sweetener"|"liquid"|"other"
   - prep_note: string (optional, e.g. "diced", "minced")
@@ -109,31 +109,65 @@ def validate_meal(meal, schema):
 DEFAULT_MODEL = "meta-llama/Llama-3.3-70B-Instruct-Turbo"
 
 
+MAX_RETRIES = 2
+
+
+def repair_json(text):
+    """Fix common LLM JSON issues: trailing commas, comments, fractions, incomplete arrays."""
+    import re
+    text = re.sub(r'//[^\n]*', '', text)
+    text = re.sub(r'/\*.*?\*/', '', text, flags=re.DOTALL)
+    text = re.sub(r',\s*([}\]])', r'\1', text)
+    text = re.sub(r':\s*(\d+)\s*/\s*(\d+)', lambda m: f': {int(m.group(1)) / int(m.group(2))}', text)
+    text = re.sub(r':\s*(\d+)\s+(\d+)\s*/\s*(\d+)', lambda m: f': {int(m.group(1)) + int(m.group(2)) / int(m.group(3))}', text)
+    if text.count('[') > text.count(']'):
+        text = text.rstrip().rstrip(',') + ']'
+    if text.count('{') > text.count('}'):
+        text = text.rstrip().rstrip(',') + '}'
+    return text
+
+
 def generate_meals(client, cuisine, meal_type, difficulty, count, schema, model=None):
     prompt = build_generation_prompt(cuisine, meal_type, difficulty, count)
 
-    response = client.chat.completions.create(
-        model=model or DEFAULT_MODEL,
-        max_tokens=8192,
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": prompt},
-        ],
-    )
+    for attempt in range(MAX_RETRIES + 1):
+        try:
+            response = client.chat.completions.create(
+                model=model or DEFAULT_MODEL,
+                max_tokens=8192,
+                messages=[
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": prompt},
+                ],
+            )
 
-    text = response.choices[0].message.content.strip()
-    if text.startswith("```"):
-        text = text.split("\n", 1)[1]
-        if text.endswith("```"):
-            text = text[:-3]
-        text = text.strip()
+            text = response.choices[0].message.content.strip()
+            if text.startswith("```"):
+                text = text.split("\n", 1)[1]
+                if text.endswith("```"):
+                    text = text[:-3]
+                text = text.strip()
 
-    meals = json.loads(text)
+            try:
+                meals = json.loads(text)
+            except json.JSONDecodeError:
+                text = repair_json(text)
+                meals = json.loads(text)
+            break
+        except (json.JSONDecodeError, Exception) as e:
+            if attempt < MAX_RETRIES:
+                print(f"  [RETRY] Attempt {attempt + 1} failed: {e}", file=sys.stderr)
+                time.sleep(1)
+                continue
+            print(f"  [SKIP] All attempts failed: {e}", file=sys.stderr)
+            return []
+
     if isinstance(meals, dict):
         meals = [meals]
 
     validated = []
     for i, meal in enumerate(meals):
+        normalize_units(meal)
         valid, error = validate_meal(meal, schema)
         if valid:
             validated.append(meal)
@@ -142,6 +176,28 @@ def generate_meals(client, cuisine, meal_type, difficulty, count, schema, model=
             print(f"  [FAIL] Meal {i + 1}: {error}", file=sys.stderr)
 
     return validated
+
+
+UNIT_ALIASES = {
+    "cloves": "clove", "bunches": "bunch", "slices": "slice",
+    "pieces": "piece", "sprigs": "sprig", "stalks": "stalk",
+    "heads": "head", "cans": "can", "packages": "package",
+    "sheets": "sheet", "sticks": "stick", "fillets": "fillet",
+    "racks": "rack", "loaves": "loaf", "blocks": "block",
+    "inches": "inch", "cups": "cup", "pounds": "lb", "pound": "lb",
+    "ounces": "oz", "ounce": "oz", "teaspoon": "tsp", "teaspoons": "tsp",
+    "tablespoon": "tbsp", "tablespoons": "tbsp", "grams": "g", "gram": "g",
+    "kilograms": "kg", "kilogram": "kg", "liters": "L", "liter": "L",
+    "litres": "L", "litre": "L", "milliliters": "ml", "milliliter": "ml",
+    "millilitres": "ml", "millilitre": "ml", "whole": "each",
+}
+
+
+def normalize_units(meal):
+    for ing in meal.get("ingredients", []):
+        unit = ing.get("unit", "")
+        if unit in UNIT_ALIASES:
+            ing["unit"] = UNIT_ALIASES[unit]
 
 
 def save_batch(meals, label):
@@ -166,6 +222,7 @@ def save_batch(meals, label):
 def run_diverse(client, schema, total_count):
     """Generate a diverse set of meals across cuisines, types, and difficulties."""
     meals = []
+    seen_names = set()
     per_batch = 3
 
     cuisine_idx = 0
@@ -188,13 +245,17 @@ def run_diverse(client, schema, total_count):
         remaining = total_count - len(meals)
         batch_size = min(per_batch, remaining)
 
-        print(f"\nGenerating {batch_size}x {cuisine} {meal_type} ({difficulty})...")
+        print(f"\n[{len(meals)}/{total_count}] Generating {batch_size}x {cuisine} {meal_type} ({difficulty})...")
         batch = generate_meals(client, cuisine, meal_type, difficulty, batch_size, schema)
-        meals.extend(batch)
+
+        for meal in batch:
+            name = meal.get("name", "")
+            if name not in seen_names:
+                meals.append(meal)
+                seen_names.add(name)
 
         cuisine_idx += 1
-        if cuisine_idx % len(CUISINES) == 0:
-            type_idx += 1
+        type_idx += 1
 
         time.sleep(0.5)
 

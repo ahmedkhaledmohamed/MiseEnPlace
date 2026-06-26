@@ -121,7 +121,9 @@
             "enum": [
               "g", "kg", "ml", "L", "cup", "tbsp", "tsp",
               "oz", "lb", "each", "bunch", "clove", "slice",
-              "pinch", "to taste"
+              "pinch", "to taste", "head", "sprig", "stalk",
+              "piece", "can", "package", "sheet", "stick",
+              "fillet", "rack", "loaf", "block", "cm", "inch"
             ]
           },
           "is_optional": { "type": "boolean", "default": false },
