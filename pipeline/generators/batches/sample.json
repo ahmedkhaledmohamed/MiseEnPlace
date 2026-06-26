@@ -1,0 +1,10 @@
+{
+  "description": "Sample batch for testing the generator with a small diverse set",
+  "batches": [
+    {"cuisine": "Middle Eastern", "meal_type": "dinner", "difficulty": "easy", "count": 2},
+    {"cuisine": "Italian", "meal_type": "lunch", "difficulty": "medium", "count": 2},
+    {"cuisine": "Japanese", "meal_type": "dinner", "difficulty": "easy", "count": 2},
+    {"cuisine": "Indian", "meal_type": "dinner", "difficulty": "medium", "count": 2},
+    {"cuisine": "Mexican", "meal_type": "breakfast", "difficulty": "easy", "count": 2}
+  ]
+}
