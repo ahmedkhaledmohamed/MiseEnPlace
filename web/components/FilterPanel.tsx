@@ -2,8 +2,16 @@
 
 import { useState } from "react";
 import { GraphMeta } from "./types";
-import { getCuisineColor } from "./colors";
+import { ColorByMode, getCuisineColor } from "./colors";
 import type { FilterState } from "./GraphExplorer";
+
+const COLOR_BY_OPTIONS: { value: ColorByMode; label: string }[] = [
+  { value: "cuisine", label: "Cuisine" },
+  { value: "cost", label: "Cost" },
+  { value: "difficulty", label: "Difficulty" },
+  { value: "mealType", label: "Meal Type" },
+  { value: "season", label: "Season" },
+];
 
 export default function FilterPanel({
   meta,
@@ -11,12 +19,16 @@ export default function FilterPanel({
   onFiltersChange,
   similarityThreshold,
   onSimilarityChange,
+  colorBy,
+  onColorByChange,
 }: {
   meta: GraphMeta;
   filters: FilterState;
   onFiltersChange: (f: FilterState) => void;
   similarityThreshold: number;
   onSimilarityChange: (v: number) => void;
+  colorBy: ColorByMode;
+  onColorByChange: (mode: ColorByMode) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
 
@@ -49,13 +61,39 @@ export default function FilterPanel({
           {hasFilters && (
             <button
               onClick={() =>
-                onFiltersChange({ cuisines: [], mealTypes: [], difficulties: [], dietaryTags: [] })
+                onFiltersChange({
+                  cuisines: [],
+                  mealTypes: [],
+                  difficulties: [],
+                  dietaryTags: [],
+                })
               }
               className="text-xs text-[var(--accent)] hover:underline"
             >
               Clear all
             </button>
           )}
+
+          <div>
+            <div className="text-xs font-medium text-[var(--text-muted)] mb-1.5 uppercase tracking-wide">
+              Color by
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {COLOR_BY_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => onColorByChange(opt.value)}
+                  className={`text-xs px-2 py-0.5 rounded-full border transition-colors ${
+                    colorBy === opt.value
+                      ? "border-[var(--accent)] bg-[var(--accent)]/20 text-[var(--accent)]"
+                      : "border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--text-muted)]"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
 
           <div>
             <div className="text-xs font-medium text-[var(--text-muted)] mb-1.5 uppercase tracking-wide">
