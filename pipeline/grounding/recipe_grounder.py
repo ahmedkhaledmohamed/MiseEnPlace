@@ -92,7 +92,7 @@ verdict rules:
 Return ONLY the JSON object, no markdown fences, no explanation."""
 
 
-DEFAULT_MODEL = "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo"
+DEFAULT_MODEL = "meta-llama/Llama-3.3-70B-Instruct-Turbo"
 
 
 def ground_meal(client, meal, model=None):

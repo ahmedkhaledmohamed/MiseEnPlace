@@ -106,7 +106,7 @@ def validate_meal(meal, schema):
         return False, str(e.message)
 
 
-DEFAULT_MODEL = "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo"
+DEFAULT_MODEL = "meta-llama/Llama-3.3-70B-Instruct-Turbo"
 
 
 def generate_meals(client, cuisine, meal_type, difficulty, count, schema, model=None):
