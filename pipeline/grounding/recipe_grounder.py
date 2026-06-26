@@ -2,7 +2,7 @@
 MiseEnPlace Recipe Grounder — Stage 2 of the offline pipeline.
 
 Takes generated meal records and verifies them against real recipes using
-Claude for analysis. Produces grounded records with confidence scores,
+Together AI for analysis. Produces grounded records with confidence scores,
 source references, and flagged issues.
 
 Usage:
@@ -10,7 +10,7 @@ Usage:
     python -m grounding.recipe_grounder --input output/meals/ --all
     python -m grounding.recipe_grounder --input output/meals/sample.json --dry-run
 
-Requires ANTHROPIC_API_KEY environment variable.
+Requires TOGETHER_API_KEY environment variable.
 """
 
 import argparse
@@ -21,7 +21,7 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-import anthropic
+from openai import OpenAI
 
 OUTPUT_DIR = Path(__file__).parent.parent / "output" / "grounded"
 
@@ -92,19 +92,24 @@ verdict rules:
 Return ONLY the JSON object, no markdown fences, no explanation."""
 
 
-def ground_meal(client, meal):
+DEFAULT_MODEL = "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo"
+
+
+def ground_meal(client, meal, model=None):
     """Evaluate a single meal record against real-world recipes."""
     recipe_json = json.dumps(meal, indent=2)
     prompt = GROUNDING_PROMPT_TEMPLATE.format(recipe_json=recipe_json)
 
-    response = client.messages.create(
-        model="claude-sonnet-4-20250514",
+    response = client.chat.completions.create(
+        model=model or DEFAULT_MODEL,
         max_tokens=4096,
-        system=GROUNDING_SYSTEM_PROMPT,
-        messages=[{"role": "user", "content": prompt}],
+        messages=[
+            {"role": "system", "content": GROUNDING_SYSTEM_PROMPT},
+            {"role": "user", "content": prompt},
+        ],
     )
 
-    text = response.content[0].text.strip()
+    text = response.choices[0].message.content.strip()
     if text.startswith("```"):
         text = text.split("\n", 1)[1]
         if text.endswith("```"):
@@ -291,11 +296,11 @@ def main():
     args = parser.parse_args()
 
     if not args.dry_run:
-        api_key = os.environ.get("ANTHROPIC_API_KEY")
+        api_key = os.environ.get("TOGETHER_API_KEY")
         if not api_key:
-            print("Error: ANTHROPIC_API_KEY environment variable not set", file=sys.stderr)
+            print("Error: TOGETHER_API_KEY environment variable not set", file=sys.stderr)
             sys.exit(1)
-        client = anthropic.Anthropic(api_key=api_key)
+        client = OpenAI(api_key=api_key, base_url="https://api.together.xyz/v1")
     else:
         client = None
 
