@@ -25,9 +25,8 @@ node_modules/
 *.swo
 .DS_Store
 
-# Pipeline outputs (large files)
-pipeline/output/images/
-pipeline/output/*.db
+# Pipeline outputs (large, regenerable)
+pipeline/output/
 
 # Claude
 .claude/
