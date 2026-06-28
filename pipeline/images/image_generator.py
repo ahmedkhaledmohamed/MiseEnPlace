@@ -103,7 +103,7 @@ def generate_image(meal, api_key):
     prompt = build_image_prompt(meal)
 
     request_body = json.dumps({
-        "model": "black-forest-labs/FLUX.1-schnell-Free",
+        "model": "black-forest-labs/FLUX.1-schnell",
         "prompt": prompt,
         "n": 1,
         "width": 1024,
@@ -117,6 +117,7 @@ def generate_image(meal, api_key):
         headers={
             "Content-Type": "application/json",
             "Authorization": f"Bearer {api_key}",
+            "User-Agent": "MiseEnPlace/1.0",
         },
     )
 
@@ -141,7 +142,10 @@ def save_image(data, output_path, is_base64=False):
         with open(output_path, "wb") as f:
             f.write(base64.b64decode(data))
     else:
-        urllib.request.urlretrieve(data, output_path)
+        req = urllib.request.Request(data, headers={"User-Agent": "MiseEnPlace/1.0"})
+        with urllib.request.urlopen(req) as resp:
+            with open(output_path, "wb") as f:
+                f.write(resp.read())
 
 
 def load_meals(input_path):
