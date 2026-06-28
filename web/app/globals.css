@@ -12,6 +12,9 @@
 body {
   background: var(--bg);
   color: var(--text);
+}
+
+.explore-page {
   overflow: hidden;
 }
 
