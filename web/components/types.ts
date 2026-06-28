@@ -1,3 +1,5 @@
+export type ViewMode = "meals" | "ingredients" | "cuisines" | "equipment";
+
 export interface MealNode {
   id: string;
   type: "meal";
