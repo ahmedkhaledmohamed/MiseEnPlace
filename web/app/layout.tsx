@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Geist } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const geist = Geist({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "MiseEnPlace — Meal Graph Explorer",
-  description: "Interactive visualization of the meal-ingredient graph",
+  title: "MiseEnPlace — Cook Smarter with the Meal Graph",
+  description:
+    "A visual-first cooking app powered by an intelligent graph that connects meals through shared ingredients, techniques, and cuisines.",
 };
 
 export default function RootLayout({
@@ -15,8 +16,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full">
-      <body className={`${inter.className} h-full`}>{children}</body>
+    <html lang="en" className={`${geist.className} h-full`}>
+      <body className="h-full">{children}</body>
     </html>
   );
 }
