@@ -83,8 +83,9 @@ def build_image_prompt(meal):
         prompt += f"Key visible ingredients: {ingredient_text}. "
 
     prompt += (
-        "Shot from 45-degree angle with shallow depth of field. "
-        "Warm, appetizing color grading. Natural window light with soft shadows. "
+        "Portrait orientation, full plate visible from 45-degree angle. "
+        "Shallow depth of field. Warm, appetizing color grading. "
+        "Natural window light with soft shadows. "
         "No text, no watermarks, no hands, no people. "
         "Magazine-quality editorial food photography."
     )
@@ -106,8 +107,8 @@ def generate_image(meal, api_key):
         "model": "black-forest-labs/FLUX.1-schnell",
         "prompt": prompt,
         "n": 1,
-        "width": 1024,
-        "height": 1024,
+        "width": 768,
+        "height": 1344,
         "steps": 4,
     }).encode()
 

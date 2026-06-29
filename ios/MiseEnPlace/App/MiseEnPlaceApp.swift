@@ -10,6 +10,7 @@ struct MiseEnPlaceApp: App {
         .modelContainer(for: [
             Meal.self, MealIngredient.self, RecipeStep.self,
             MealSimilarity.self, PlanEntry.self, PantryItem.self,
+            FavoriteMeal.self,
         ])
     }
 }
@@ -22,6 +23,11 @@ struct ContentView: View {
             FeedView()
                 .tabItem {
                     Label("Feed", systemImage: "house.fill")
+                }
+
+            FavoritesView()
+                .tabItem {
+                    Label("Favorites", systemImage: "heart.fill")
                 }
 
             PlannerView()

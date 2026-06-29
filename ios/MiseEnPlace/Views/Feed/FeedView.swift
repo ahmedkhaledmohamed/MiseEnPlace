@@ -28,7 +28,7 @@ struct FeedView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                LazyVStack(spacing: 16) {
+                LazyVStack(spacing: 2) {
                     ForEach(filteredMeals, id: \.id) { meal in
                         NavigationLink(value: meal.id) {
                             MealCard(meal: meal)
@@ -36,7 +36,6 @@ struct FeedView: View {
                         .buttonStyle(.plain)
                     }
                 }
-                .padding(.horizontal)
                 .padding(.bottom, 20)
             }
             .background(Theme.bg)

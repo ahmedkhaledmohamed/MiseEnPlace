@@ -4,41 +4,34 @@ struct MealCard: View {
     let meal: Meal
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            ZStack(alignment: .bottomLeading) {
-                MealImage(imageUrl: meal.imageUrl, cuisine: meal.cuisine, height: 200)
+        ZStack(alignment: .bottom) {
+            MealImage(imageUrl: meal.imageUrl, cuisine: meal.cuisine, height: 420)
 
-                LinearGradient(
-                    colors: [.clear, .black.opacity(0.7)],
-                    startPoint: .center,
-                    endPoint: .bottom
-                )
+            LinearGradient(
+                colors: [.clear, .clear, .black.opacity(0.8)],
+                startPoint: .top,
+                endPoint: .bottom
+            )
 
-                VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(alignment: .bottom) {
                     CuisinePill(cuisine: meal.cuisine)
-                    Text(meal.name)
-                        .font(.title3)
-                        .fontWeight(.bold)
-                        .foregroundStyle(.white)
+                    Spacer()
+                    MealActions(meal: meal, iconSize: 22, spacing: 14)
                 }
-                .padding(12)
-            }
 
-            HStack(spacing: 16) {
-                StatBadge(icon: "clock", value: "\(meal.totalTime) min")
-                StatBadge(icon: "dollarsign.circle", value: String(format: "$%.2f", meal.costPerServing))
-                StatBadge(icon: "flame", value: meal.difficulty)
-                Spacer()
-                StatBadge(icon: "person.2", value: "\(meal.servings)")
+                Text(meal.name)
+                    .font(.system(size: 22, weight: .bold, design: .serif))
+                    .foregroundStyle(.white)
+                    .lineLimit(2)
+
+                Text("\(meal.totalTime) min · \(String(format: "$%.2f", meal.costPerServing)) · \(meal.difficulty)")
+                    .font(.caption)
+                    .foregroundStyle(.white.opacity(0.7))
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 10)
-            .background(Theme.cardBg)
+            .padding(14)
         }
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Theme.border, lineWidth: 1)
-        )
+        .frame(height: 420)
+        .clipped()
     }
 }
