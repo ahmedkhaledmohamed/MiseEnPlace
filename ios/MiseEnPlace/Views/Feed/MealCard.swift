@@ -4,34 +4,35 @@ struct MealCard: View {
     let meal: Meal
 
     var body: some View {
-        ZStack(alignment: .bottom) {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 8) {
+                CuisinePill(cuisine: meal.cuisine)
+                Text(meal.name)
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .lineLimit(1)
+                Spacer()
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+
             MealImage(imageUrl: meal.imageUrl, cuisine: meal.cuisine, height: 420)
 
-            LinearGradient(
-                colors: [.clear, .clear, .black.opacity(0.8)],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-
             VStack(alignment: .leading, spacing: 6) {
-                HStack(alignment: .bottom) {
-                    CuisinePill(cuisine: meal.cuisine)
-                    Spacer()
-                    MealActions(meal: meal, iconSize: 22, spacing: 14)
-                }
-
-                Text(meal.name)
-                    .font(.system(size: 22, weight: .bold, design: .serif))
-                    .foregroundStyle(.white)
-                    .lineLimit(2)
+                MealActions(meal: meal, iconSize: 22, tint: Theme.text)
 
                 Text("\(meal.totalTime) min · \(String(format: "$%.2f", meal.costPerServing)) · \(meal.difficulty)")
                     .font(.caption)
-                    .foregroundStyle(.white.opacity(0.7))
+                    .fontWeight(.medium)
+                    .foregroundStyle(Theme.text)
+
+                Text(meal.desc)
+                    .font(.caption)
+                    .foregroundStyle(Theme.textMuted)
+                    .lineLimit(1)
             }
-            .padding(14)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
         }
-        .frame(height: 420)
-        .clipped()
     }
 }
