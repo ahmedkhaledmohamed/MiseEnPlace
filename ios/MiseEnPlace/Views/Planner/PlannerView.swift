@@ -7,9 +7,9 @@ struct PlannerView: View {
     @Query private var entries: [PlanEntry]
     @State private var budget: Double = 80.0
     @State private var showBudgetEditor = false
+    @State private var addingSlot: SlotSelection? = nil
 
     private let days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-    private let slots = ["breakfast", "lunch", "dinner"]
 
     private var weekStart: Date {
         Calendar.current.dateInterval(of: .weekOfYear, for: .now)?.start ?? .now
@@ -32,6 +32,8 @@ struct PlannerView: View {
         return ingredientCosts.values.reduce(0, +)
     }
 
+    private var plannedMealCount: Int { weekEntries.count }
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
@@ -40,6 +42,21 @@ struct PlannerView: View {
                 }
                 .padding()
 
+                HStack {
+                    Text("\(plannedMealCount) meals planned")
+                        .font(.caption)
+                        .foregroundStyle(Theme.textMuted)
+                    Spacer()
+                    if plannedMealCount > 0 {
+                        Button("Clear All", role: .destructive) {
+                            weekEntries.forEach { context.delete($0) }
+                        }
+                        .font(.caption)
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.bottom, 8)
+
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 12) {
                         ForEach(0..<7, id: \.self) { dayIndex in
@@ -47,6 +64,9 @@ struct PlannerView: View {
                                 dayLabel: days[dayIndex],
                                 entries: weekEntries.filter { $0.dayIndex == dayIndex },
                                 allMeals: allMeals,
+                                onAdd: { slot in
+                                    addingSlot = SlotSelection(dayIndex: dayIndex, mealSlot: slot)
+                                },
                                 onRemove: { entry in
                                     context.delete(entry)
                                 }
@@ -63,8 +83,20 @@ struct PlannerView: View {
                 TextField("Budget", value: $budget, format: .currency(code: "CAD"))
                 Button("Done") {}
             }
+            .sheet(item: $addingSlot) { slot in
+                MealPickerSheet(
+                    dayIndex: slot.dayIndex, mealSlot: slot.mealSlot,
+                    allMeals: allMeals, weekStart: weekStart
+                )
+            }
         }
     }
+}
+
+struct SlotSelection: Identifiable {
+    let dayIndex: Int
+    let mealSlot: String
+    var id: String { "\(dayIndex)-\(mealSlot)" }
 }
 
 struct BudgetBar: View {
@@ -109,6 +141,7 @@ struct DayColumn: View {
     let dayLabel: String
     let entries: [PlanEntry]
     let allMeals: [Meal]
+    let onAdd: (String) -> Void
     let onRemove: (PlanEntry) -> Void
 
     private let slots = ["breakfast", "lunch", "dinner"]
@@ -132,24 +165,90 @@ struct DayColumn: View {
                             .foregroundStyle(Theme.text)
                     }
                     .frame(width: 80)
-                    .swipeActions {
-                        Button(role: .destructive) {
-                            onRemove(entry)
-                        } label: {
-                            Label("Remove", systemImage: "trash")
-                        }
+                    .onLongPressGesture {
+                        onRemove(entry)
                     }
                 } else {
-                    RoundedRectangle(cornerRadius: 6)
-                        .strokeBorder(Theme.border, style: StrokeStyle(lineWidth: 1, dash: [4]))
-                        .frame(width: 80, height: 50)
-                        .overlay {
-                            Text(slot.prefix(1).uppercased())
-                                .font(.caption2)
+                    Button { onAdd(slot) } label: {
+                        RoundedRectangle(cornerRadius: 6)
+                            .strokeBorder(Theme.border, style: StrokeStyle(lineWidth: 1, dash: [4]))
+                            .frame(width: 80, height: 50)
+                            .overlay {
+                                VStack(spacing: 2) {
+                                    Image(systemName: "plus")
+                                        .font(.caption2)
+                                    Text(slot.prefix(1).uppercased())
+                                        .font(.system(size: 9))
+                                }
                                 .foregroundStyle(Theme.textMuted)
-                        }
+                            }
+                    }
                 }
             }
         }
+    }
+}
+
+struct MealPickerSheet: View {
+    let dayIndex: Int
+    let mealSlot: String
+    let allMeals: [Meal]
+    let weekStart: Date
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var context
+    @State private var searchText = ""
+
+    private let days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+
+    private var filteredMeals: [Meal] {
+        if searchText.isEmpty { return allMeals }
+        let q = searchText.lowercased()
+        return allMeals.filter { $0.name.lowercased().contains(q) || $0.cuisine.lowercased().contains(q) }
+    }
+
+    var body: some View {
+        NavigationStack {
+            List(filteredMeals, id: \.id) { meal in
+                Button {
+                    let entry = PlanEntry(
+                        mealId: meal.id, dayIndex: dayIndex,
+                        mealSlot: mealSlot, weekStart: weekStart
+                    )
+                    context.insert(entry)
+                    dismiss()
+                } label: {
+                    HStack(spacing: 10) {
+                        MealImage(imageName: meal.imageName, cuisine: meal.cuisine, height: 44)
+                            .frame(width: 44)
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(meal.name)
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                            HStack(spacing: 8) {
+                                Text(meal.cuisine)
+                                    .font(.caption2)
+                                    .foregroundStyle(Theme.textMuted)
+                                Text("\(meal.totalTime) min")
+                                    .font(.caption2)
+                                    .foregroundStyle(Theme.textMuted)
+                                Text(String(format: "$%.2f", meal.costPerServing))
+                                    .font(.caption2)
+                                    .foregroundStyle(Theme.textMuted)
+                            }
+                        }
+                    }
+                }
+            }
+            .searchable(text: $searchText, prompt: "Search meals")
+            .navigationTitle("\(days[dayIndex]) \(mealSlot.capitalized)")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+            }
+        }
+        .presentationDetents([.large])
     }
 }
