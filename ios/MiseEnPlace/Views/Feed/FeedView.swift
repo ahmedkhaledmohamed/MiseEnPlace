@@ -30,10 +30,7 @@ struct FeedView: View {
             ScrollView {
                 LazyVStack(spacing: 2) {
                     ForEach(filteredMeals, id: \.id) { meal in
-                        NavigationLink(value: meal.id) {
-                            MealCard(meal: meal)
-                        }
-                        .buttonStyle(.plain)
+                        MealCard(meal: meal, onTapImage: meal.id)
                     }
                 }
                 .padding(.bottom, 20)
