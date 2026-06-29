@@ -55,9 +55,21 @@ struct SimilarityJSON: Codable {
 }
 
 enum DataSeeder {
+    private static let dataVersion = 2
+
     static func seedIfNeeded(context: ModelContext) {
+        let currentVersion = UserDefaults.standard.integer(forKey: "dataVersion")
         let count = (try? context.fetchCount(FetchDescriptor<Meal>())) ?? 0
-        guard count == 0 else { return }
+
+        if count > 0 && currentVersion >= dataVersion { return }
+
+        if count > 0 {
+            try? context.delete(model: MealSimilarity.self)
+            try? context.delete(model: RecipeStep.self)
+            try? context.delete(model: MealIngredient.self)
+            try? context.delete(model: Meal.self)
+            try? context.save()
+        }
 
         guard let url = Bundle.main.url(forResource: "meals", withExtension: "json"),
               let data = try? Data(contentsOf: url),
@@ -122,6 +134,7 @@ enum DataSeeder {
         }
 
         try? context.save()
-        print("[DataSeeder] Seeded \(export.meals.count) meals, \(export.similarities.count) similarities")
+        UserDefaults.standard.set(dataVersion, forKey: "dataVersion")
+        print("[DataSeeder] Seeded \(export.meals.count) meals, \(export.similarities.count) similarities (v\(dataVersion))")
     }
 }
