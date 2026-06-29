@@ -30,3 +30,5 @@ pipeline/output/
 
 # Claude
 .claude/
+ios/build/
+ios/MiseEnPlace/Resources/*.png

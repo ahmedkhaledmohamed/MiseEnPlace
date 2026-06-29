@@ -1,0 +1,36 @@
+name: MiseEnPlace
+options:
+  bundleIdPrefix: com.ahmedkhaledmohamed
+  deploymentTarget:
+    iOS: "17.0"
+  xcodeVersion: "16.3"
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    DEVELOPMENT_TEAM: ""
+
+targets:
+  MiseEnPlace:
+    type: application
+    platform: iOS
+    sources:
+      - path: MiseEnPlace/App
+      - path: MiseEnPlace/Models
+      - path: MiseEnPlace/Views
+      - path: MiseEnPlace/Services
+      - path: MiseEnPlace/Resources
+        buildPhase: resources
+    info:
+      path: MiseEnPlace/Info.plist
+      properties:
+        CFBundleDisplayName: MiseEnPlace
+        CFBundleShortVersionString: "1.0.0"
+        CFBundleVersion: "1"
+        UILaunchScreen:
+          UIColorName: ""
+          UIImageName: ""
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        UIUserInterfaceStyle: Dark
