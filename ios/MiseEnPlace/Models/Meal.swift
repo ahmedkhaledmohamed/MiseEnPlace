@@ -16,7 +16,7 @@ final class Meal {
     var costPerServing: Double
     var totalCost: Double
     var sourceInspiration: String
-    var imageName: String?
+    var imageUrl: String?
     var dietaryTags: [String]
     var seasons: [String]
     var equipment: [String]
@@ -33,7 +33,7 @@ final class Meal {
         id: String, name: String, desc: String, cuisine: String,
         mealType: String, difficulty: String, prepTime: Int, cookTime: Int,
         totalTime: Int, servings: Int, costPerServing: Double, totalCost: Double,
-        sourceInspiration: String, imageName: String?,
+        sourceInspiration: String, imageUrl: String?,
         dietaryTags: [String], seasons: [String], equipment: [String],
         tips: [String], variations: [String]
     ) {
@@ -50,7 +50,7 @@ final class Meal {
         self.costPerServing = costPerServing
         self.totalCost = totalCost
         self.sourceInspiration = sourceInspiration
-        self.imageName = imageName
+        self.imageUrl = imageUrl
         self.dietaryTags = dietaryTags
         self.seasons = seasons
         self.equipment = equipment

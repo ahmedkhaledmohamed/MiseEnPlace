@@ -71,15 +71,16 @@ def export(db_path, out_path, images_dir=None):
 
     import hashlib
     images_path = Path(images_dir) if images_dir else Path(__file__).parent / "output" / "images"
+    image_base_url = "https://mealgraph.vercel.app/images"
 
     meals = []
     for m in meals_raw:
         mid = m["id"]
         key = f"{m['name']}:{m['cuisine']}".lower()
         image_id = hashlib.md5(key.encode()).hexdigest()[:12]
-        image_name = None
+        image_url = None
         if (images_path / f"{image_id}.png").exists():
-            image_name = f"{image_id}.png"
+            image_url = f"{image_base_url}/{image_id}.png"
 
         meals.append({
             "id": f"meal-{mid}",
@@ -95,7 +96,7 @@ def export(db_path, out_path, images_dir=None):
             "costPerServing": m["cost_per_serving"],
             "totalCost": m["total_cost"],
             "sourceInspiration": m["source_inspiration"],
-            "imageName": image_name,
+            "imageUrl": image_url,
             "dietaryTags": dietary.get(mid, []),
             "seasons": seasons.get(mid, []),
             "equipment": equipment.get(mid, []),
