@@ -9,7 +9,8 @@ options:
 settings:
   base:
     SWIFT_VERSION: "5.9"
-    DEVELOPMENT_TEAM: ""
+    DEVELOPMENT_TEAM: "VMXQN9K3P2"
+    CODE_SIGN_STYLE: Automatic
 
 targets:
   MiseEnPlace:
@@ -25,12 +26,16 @@ targets:
     info:
       path: MiseEnPlace/Info.plist
       properties:
-        CFBundleDisplayName: MiseEnPlace
+        CFBundleDisplayName: Cooknect
         CFBundleShortVersionString: "1.0.0"
         CFBundleVersion: "1"
+        CFBundleIconName: AppIcon
         UILaunchScreen:
           UIColorName: ""
           UIImageName: ""
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
         UIUserInterfaceStyle: Dark

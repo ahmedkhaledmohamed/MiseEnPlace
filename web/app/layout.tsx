@@ -5,7 +5,7 @@ import "./globals.css";
 const geist = Geist({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "MiseEnPlace — Cook Smarter with the Meal Graph",
+  title: "Cooknect — Cook Smarter with the Meal Graph",
   description:
     "A visual-first cooking app powered by an intelligent graph that connects meals through shared ingredients, techniques, and cuisines.",
 };
