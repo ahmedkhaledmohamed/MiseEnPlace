@@ -27,7 +27,15 @@ struct MealDetailView: View {
             if let meal {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
-                        MealImage(imageUrl: meal.imageUrl, cuisine: meal.cuisine, height: 280)
+                        ZStack(alignment: .bottomTrailing) {
+                            MealImage(imageUrl: meal.imageUrl, cuisine: meal.cuisine, height: 380)
+                            LinearGradient(
+                                colors: [.clear, .black.opacity(0.5)],
+                                startPoint: .center, endPoint: .bottom
+                            )
+                            MealActions(meal: meal, iconSize: 26, spacing: 18)
+                                .padding(16)
+                        }
 
                         VStack(alignment: .leading, spacing: 16) {
                             headerSection(meal)
@@ -45,22 +53,6 @@ struct MealDetailView: View {
                 }
                 .background(Theme.bg)
                 .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .bottomBar) {
-                        Button {
-                            showAddToPlan = true
-                        } label: {
-                            Label("Add to Plan", systemImage: "calendar.badge.plus")
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 8)
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .tint(Theme.accent)
-                    }
-                }
-                .sheet(isPresented: $showAddToPlan) {
-                    AddToPlanSheet(meal: meal)
-                }
             } else {
                 ProgressView()
             }
