@@ -38,12 +38,14 @@ struct CuisinePill: View {
 
     var body: some View {
         Text(cuisine)
-            .font(.caption2)
-            .fontWeight(.semibold)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 3)
-            .background(Theme.cuisineColor(cuisine).opacity(0.25))
-            .foregroundStyle(Theme.cuisineColor(cuisine))
+            .font(.caption)
+            .fontWeight(.bold)
+            .tracking(0.3)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
+            .background(Theme.cuisineColor(cuisine).opacity(0.85))
+            .foregroundStyle(.white)
             .clipShape(Capsule())
+            .shadow(color: .black.opacity(0.3), radius: 2, y: 1)
     }
 }
