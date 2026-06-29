@@ -27,15 +27,11 @@ struct MealDetailView: View {
             if let meal {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
-                        ZStack(alignment: .bottomTrailing) {
-                            MealImage(imageUrl: meal.imageUrl, cuisine: meal.cuisine, height: 380)
-                            LinearGradient(
-                                colors: [.clear, .black.opacity(0.5)],
-                                startPoint: .center, endPoint: .bottom
-                            )
-                            MealActions(meal: meal, iconSize: 26, spacing: 18)
-                                .padding(16)
-                        }
+                        MealImage(imageUrl: meal.imageUrl, cuisine: meal.cuisine, height: 380)
+
+                        MealActions(meal: meal, iconSize: 24, tint: Theme.text)
+                            .padding(.horizontal, 16)
+                            .padding(.top, 10)
 
                         VStack(alignment: .leading, spacing: 16) {
                             headerSection(meal)

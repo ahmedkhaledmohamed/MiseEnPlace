@@ -4,66 +4,94 @@ import SwiftData
 struct MealActions: View {
     let meal: Meal
     var iconSize: CGFloat = 24
-    var spacing: CGFloat = 16
+    var tint: Color = Theme.text
 
     @Environment(\.modelContext) private var context
     @Query private var favorites: [FavoriteMeal]
     @State private var showAddToPlan = false
+    @State private var showSignIn = false
+    @State private var pendingAction: PendingAction?
+    @AppStorage("hasPassedGate") private var hasPassedGate = false
 
     private var isFavorited: Bool {
         favorites.contains { $0.mealId == meal.id }
     }
 
     var body: some View {
-        HStack(spacing: spacing) {
-            Button {
-                toggleFavorite()
-            } label: {
+        HStack(spacing: 18) {
+            Button { gated { toggleFavorite() } } label: {
                 Image(systemName: isFavorited ? "heart.fill" : "heart")
                     .font(.system(size: iconSize))
-                    .foregroundStyle(isFavorited ? .red : .white)
+                    .foregroundStyle(isFavorited ? .red : tint)
                     .contentTransition(.symbolEffect(.replace))
             }
 
-            Button {
-                showAddToPlan = true
-            } label: {
+            Button { gated { showAddToPlan = true } } label: {
                 Image(systemName: "calendar.badge.plus")
                     .font(.system(size: iconSize))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(tint)
             }
 
-            ShareLink(
-                item: shareText,
-                subject: Text(meal.name),
-                message: Text(meal.desc)
-            ) {
-                Image(systemName: "square.and.arrow.up")
+            Button { gated { shareAction() } } label: {
+                Image(systemName: "paperplane")
                     .font(.system(size: iconSize))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(tint)
+            }
+
+            Spacer()
+
+            Button { gated { toggleFavorite() } } label: {
+                Image(systemName: isFavorited ? "bookmark.fill" : "bookmark")
+                    .font(.system(size: iconSize))
+                    .foregroundStyle(isFavorited ? Theme.accent : tint)
             }
         }
         .sheet(isPresented: $showAddToPlan) {
             AddToPlanSheet(meal: meal)
         }
+        .sheet(isPresented: $showSignIn) {
+            SignInSheet {
+                if let action = pendingAction {
+                    pendingAction = nil
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        action.execute()
+                    }
+                }
+            }
+        }
     }
 
-    private var shareText: String {
-        var text = "\(meal.name) — \(meal.cuisine)\n\(meal.desc)\n\(meal.totalTime) min · $\(String(format: "%.2f", meal.costPerServing))/serving"
-        if let url = meal.imageUrl {
-            text += "\n\(url)"
+    private func gated(_ action: @escaping () -> Void) {
+        if hasPassedGate {
+            action()
+        } else {
+            pendingAction = PendingAction(execute: action)
+            showSignIn = true
         }
-        return text
     }
 
     private func toggleFavorite() {
         let impact = UIImpactFeedbackGenerator(style: .medium)
         impact.impactOccurred()
-
         if let existing = favorites.first(where: { $0.mealId == meal.id }) {
             context.delete(existing)
         } else {
             context.insert(FavoriteMeal(mealId: meal.id))
         }
     }
+
+    private func shareAction() {
+        var text = "\(meal.name) — \(meal.cuisine)\n\(meal.desc)\n\(meal.totalTime) min · $\(String(format: "%.2f", meal.costPerServing))/serving"
+        if let url = meal.imageUrl { text += "\n\(url)" }
+
+        let av = UIActivityViewController(activityItems: [text], applicationActivities: nil)
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let root = windowScene.windows.first?.rootViewController {
+            root.present(av, animated: true)
+        }
+    }
+}
+
+private struct PendingAction {
+    let execute: () -> Void
 }
