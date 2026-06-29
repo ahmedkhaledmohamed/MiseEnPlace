@@ -71,7 +71,7 @@ export default function LandingPage() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[var(--bg)]/80 backdrop-blur-md border-b border-[var(--border)]">
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
           <span className="font-semibold text-lg tracking-tight">
-            <span className="text-[var(--accent)]">Mise</span>EnPlace
+            <span className="text-[var(--accent)]">Cook</span>nect
           </span>
           <div className="flex items-center gap-4">
             <Link
@@ -132,7 +132,7 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold mb-4 text-center">The core insight</h2>
           <p className="text-center text-[var(--text-muted)] text-lg max-w-3xl mx-auto mb-12">
-            No cooking app models meals as a connected graph. They're all flat lists. MiseEnPlace treats the graph as the product — every feature emerges from ingredient relationships.
+            No cooking app models meals as a connected graph. They're all flat lists. Cooknect treats the graph as the product — every feature emerges from ingredient relationships.
           </p>
           <div className="grid md:grid-cols-2 gap-6">
             {FEATURES.map((feature) => (
@@ -245,7 +245,7 @@ export default function LandingPage() {
       <footer className="py-8 px-6 border-t border-[var(--border)]">
         <div className="max-w-4xl mx-auto flex justify-between items-center text-sm text-[var(--text-muted)]">
           <span>
-            <span className="text-[var(--accent)]">Mise</span>EnPlace
+            <span className="text-[var(--accent)]">Cook</span>nect
           </span>
           <div className="flex gap-4">
             <Link href="/explore" className="hover:text-[var(--text)] transition-colors">
