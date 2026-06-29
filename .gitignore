@@ -32,3 +32,4 @@ pipeline/output/
 .claude/
 ios/build/
 ios/MiseEnPlace/Resources/*.png
+web/public/images/

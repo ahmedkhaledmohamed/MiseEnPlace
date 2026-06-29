@@ -1,40 +1,50 @@
 import SwiftUI
 
 struct MealImage: View {
-    let imageName: String?
+    let imageUrl: String?
     let cuisine: String
     var height: CGFloat = 250
 
-    private var uiImage: UIImage? {
-        guard let name = imageName,
-              let path = Bundle.main.path(forResource: name, ofType: nil) ??
-                         Bundle.main.path(forResource: (name as NSString).deletingPathExtension, ofType: (name as NSString).pathExtension)
-        else { return nil }
-        return UIImage(contentsOfFile: path)
-    }
-
     var body: some View {
-        if let img = uiImage {
-            Image(uiImage: img)
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(height: height)
-                .clipped()
-        } else {
-            ZStack {
-                LinearGradient(
-                    colors: [
-                        Theme.cuisineColor(cuisine).opacity(0.4),
-                        Theme.surface,
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                Image(systemName: "fork.knife")
-                    .font(.system(size: 40))
-                    .foregroundStyle(Theme.textMuted.opacity(0.4))
+        if let urlString = imageUrl, let url = URL(string: urlString) {
+            AsyncImage(url: url) { phase in
+                switch phase {
+                case .success(let image):
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(height: height)
+                        .clipped()
+                case .failure:
+                    placeholder
+                default:
+                    placeholder
+                        .overlay {
+                            ProgressView()
+                                .tint(Theme.textMuted)
+                        }
+                }
             }
             .frame(height: height)
+        } else {
+            placeholder
         }
+    }
+
+    private var placeholder: some View {
+        ZStack {
+            LinearGradient(
+                colors: [
+                    Theme.cuisineColor(cuisine).opacity(0.4),
+                    Theme.surface,
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            Image(systemName: "fork.knife")
+                .font(.system(size: 40))
+                .foregroundStyle(Theme.textMuted.opacity(0.4))
+        }
+        .frame(height: height)
     }
 }

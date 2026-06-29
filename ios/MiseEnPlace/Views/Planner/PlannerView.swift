@@ -157,7 +157,7 @@ struct DayColumn: View {
                 if let entry = entries.first(where: { $0.mealSlot == slot }),
                    let meal = allMeals.first(where: { $0.id == entry.mealId }) {
                     VStack(spacing: 2) {
-                        MealImage(imageName: meal.imageName, cuisine: meal.cuisine, height: 50)
+                        MealImage(imageUrl: meal.imageUrl, cuisine: meal.cuisine, height: 50)
                             .clipShape(RoundedRectangle(cornerRadius: 6))
                         Text(meal.name)
                             .font(.caption2)
@@ -218,7 +218,7 @@ struct MealPickerSheet: View {
                     dismiss()
                 } label: {
                     HStack(spacing: 10) {
-                        MealImage(imageName: meal.imageName, cuisine: meal.cuisine, height: 44)
+                        MealImage(imageUrl: meal.imageUrl, cuisine: meal.cuisine, height: 44)
                             .frame(width: 44)
                             .clipShape(RoundedRectangle(cornerRadius: 6))
                         VStack(alignment: .leading, spacing: 2) {

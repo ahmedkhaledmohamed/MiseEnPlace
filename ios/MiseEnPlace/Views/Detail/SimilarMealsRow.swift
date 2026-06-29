@@ -15,7 +15,7 @@ struct SimilarMealsRow: View {
                 ForEach(similarMeals, id: \.id) { meal in
                     NavigationLink(value: meal.id) {
                         VStack(alignment: .leading, spacing: 4) {
-                            MealImage(imageName: meal.imageName, cuisine: meal.cuisine, height: 80)
+                            MealImage(imageUrl: meal.imageUrl, cuisine: meal.cuisine, height: 80)
                                 .frame(width: 120)
                                 .clipShape(RoundedRectangle(cornerRadius: 8))
                             Text(meal.name)

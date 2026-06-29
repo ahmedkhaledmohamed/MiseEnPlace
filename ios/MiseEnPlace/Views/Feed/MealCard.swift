@@ -6,7 +6,7 @@ struct MealCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             ZStack(alignment: .bottomLeading) {
-                MealImage(imageName: meal.imageName, cuisine: meal.cuisine, height: 200)
+                MealImage(imageUrl: meal.imageUrl, cuisine: meal.cuisine, height: 200)
 
                 LinearGradient(
                     colors: [.clear, .black.opacity(0.7)],

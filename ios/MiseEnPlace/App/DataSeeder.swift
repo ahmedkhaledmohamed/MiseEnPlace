@@ -20,7 +20,7 @@ struct MealJSON: Codable {
     let costPerServing: Double
     let totalCost: Double
     let sourceInspiration: String
-    let imageName: String?
+    let imageUrl: String?
     let dietaryTags: [String]
     let seasons: [String]
     let equipment: [String]
@@ -82,7 +82,7 @@ enum DataSeeder {
                 costPerServing: mealJSON.costPerServing,
                 totalCost: mealJSON.totalCost,
                 sourceInspiration: mealJSON.sourceInspiration,
-                imageName: mealJSON.imageName,
+                imageUrl: mealJSON.imageUrl,
                 dietaryTags: mealJSON.dietaryTags,
                 seasons: mealJSON.seasons,
                 equipment: mealJSON.equipment,

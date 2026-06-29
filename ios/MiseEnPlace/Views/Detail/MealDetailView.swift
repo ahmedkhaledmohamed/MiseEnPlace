@@ -27,7 +27,7 @@ struct MealDetailView: View {
             if let meal {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
-                        MealImage(imageName: meal.imageName, cuisine: meal.cuisine, height: 280)
+                        MealImage(imageUrl: meal.imageUrl, cuisine: meal.cuisine, height: 280)
 
                         VStack(alignment: .leading, spacing: 16) {
                             headerSection(meal)
