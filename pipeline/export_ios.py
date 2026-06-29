@@ -69,18 +69,16 @@ def export(db_path, out_path, images_dir=None):
     for row in conn.execute("SELECT meal_id, variation FROM meal_variations"):
         variations.setdefault(row["meal_id"], []).append(row["variation"])
 
-    if images_dir:
-        from images.image_generator import meal_id as compute_meal_id
-        images_path = Path(images_dir)
-    else:
-        images_path = Path(__file__).parent / "output" / "images"
+    import hashlib
+    images_path = Path(images_dir) if images_dir else Path(__file__).parent / "output" / "images"
 
     meals = []
     for m in meals_raw:
         mid = m["id"]
-        image_id = m.get("image_id")
+        key = f"{m['name']}:{m['cuisine']}".lower()
+        image_id = hashlib.md5(key.encode()).hexdigest()[:12]
         image_name = None
-        if image_id and (images_path / f"{image_id}.png").exists():
+        if (images_path / f"{image_id}.png").exists():
             image_name = f"{image_id}.png"
 
         meals.append({

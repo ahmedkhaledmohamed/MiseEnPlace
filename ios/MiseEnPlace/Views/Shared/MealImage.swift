@@ -5,9 +5,17 @@ struct MealImage: View {
     let cuisine: String
     var height: CGFloat = 250
 
+    private var uiImage: UIImage? {
+        guard let name = imageName,
+              let path = Bundle.main.path(forResource: name, ofType: nil) ??
+                         Bundle.main.path(forResource: (name as NSString).deletingPathExtension, ofType: (name as NSString).pathExtension)
+        else { return nil }
+        return UIImage(contentsOfFile: path)
+    }
+
     var body: some View {
-        if let name = imageName, let uiImage = UIImage(named: name) {
-            Image(uiImage: uiImage)
+        if let img = uiImage {
+            Image(uiImage: img)
                 .resizable()
                 .aspectRatio(contentMode: .fill)
                 .frame(height: height)

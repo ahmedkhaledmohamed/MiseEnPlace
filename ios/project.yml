@@ -16,7 +16,12 @@ targets:
     type: application
     platform: iOS
     sources:
-      - path: MiseEnPlace
+      - path: MiseEnPlace/App
+      - path: MiseEnPlace/Models
+      - path: MiseEnPlace/Views
+      - path: MiseEnPlace/Services
+      - path: MiseEnPlace/Resources
+        buildPhase: resources
     info:
       path: MiseEnPlace/Info.plist
       properties:
