@@ -37,8 +37,12 @@ struct MealCard: View {
                     HStack {
                         Text("\(meal.totalTime) min · \(String(format: "$%.2f", meal.costPerServing)) · \(meal.difficulty)")
                             .font(.caption)
-                            .fontWeight(.medium)
-                            .foregroundStyle(.white.opacity(0.85))
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(.black.opacity(0.6))
+                            .clipShape(Capsule())
                         Spacer()
                     }
                 }
