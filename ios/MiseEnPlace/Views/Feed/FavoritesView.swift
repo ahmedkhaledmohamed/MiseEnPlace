@@ -4,6 +4,7 @@ import SwiftData
 struct FavoritesView: View {
     @Query private var allMeals: [Meal]
     @Query(sort: \FavoriteMeal.createdAt, order: .reverse) private var favorites: [FavoriteMeal]
+    @State private var navigationPath = NavigationPath()
 
     private var favoriteMeals: [Meal] {
         let favIds = Set(favorites.map(\.mealId))
@@ -11,7 +12,7 @@ struct FavoritesView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $navigationPath) {
             Group {
                 if favoriteMeals.isEmpty {
                     VStack(spacing: 12) {
@@ -29,10 +30,9 @@ struct FavoritesView: View {
                     ScrollView {
                         LazyVStack(spacing: 2) {
                             ForEach(favoriteMeals, id: \.id) { meal in
-                                NavigationLink(value: meal.id) {
-                                    MealCard(meal: meal)
+                                MealCard(meal: meal) {
+                                    navigationPath.append(meal.id)
                                 }
-                                .buttonStyle(.plain)
                             }
                         }
                         .padding(.bottom, 20)
