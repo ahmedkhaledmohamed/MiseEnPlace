@@ -37,7 +37,7 @@ struct FeedView: View {
             }
             .background(Theme.bg)
             .searchable(text: $searchText, prompt: "Search meals or ingredients")
-            .navigationTitle("Cooknect")
+            .navigationTitle("Potluck")
             .navigationDestination(for: String.self) { mealId in
                 MealDetailView(mealId: mealId)
             }
