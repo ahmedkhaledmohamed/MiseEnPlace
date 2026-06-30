@@ -18,6 +18,7 @@
 		5FD1B1DB0BAF4B25D3CE28B4 /* GroceryListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BC08452911B2D19339C4A6F /* GroceryListView.swift */; };
 		65DC7CFADBF0BA33B420C3A6 /* MealImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = E04158DC68B74C07EC62CD8D /* MealImage.swift */; };
 		69F534DD88D0CC25BBE2737D /* PlannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 401E42A5F9C7D525DA995A42 /* PlannerView.swift */; };
+		98A19D4924260BF40765EF0C /* MealSuggestionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B35375082B838BB11936AF1 /* MealSuggestionService.swift */; };
 		9F6D760E25DD2ED2D49201A2 /* SignInSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C1B897AD6C4493B5A4BE682 /* SignInSheet.swift */; };
 		A7E01BD06AA5A045B125DD0F /* FeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 676D0758CB789AFDCCC3AEC0 /* FeedView.swift */; };
 		B78AA08F2906008FE2A0D7CE /* MealActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 770D7E6AF7EAF44545757F3B /* MealActions.swift */; };
@@ -29,6 +30,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		2B35375082B838BB11936AF1 /* MealSuggestionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealSuggestionService.swift; sourceTree = "<group>"; };
 		2BC08452911B2D19339C4A6F /* GroceryListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroceryListView.swift; sourceTree = "<group>"; };
 		2F02726735CA5AA1184A5356 /* SimilarMealsRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimilarMealsRow.swift; sourceTree = "<group>"; };
 		39B5966047465780F3607801 /* MiseEnPlaceApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiseEnPlaceApp.swift; sourceTree = "<group>"; };
@@ -137,6 +139,7 @@
 			isa = PBXGroup;
 			children = (
 				55E80F8C361D56A15B72B452 /* .gitkeep */,
+				2B35375082B838BB11936AF1 /* MealSuggestionService.swift */,
 			);
 			name = Services;
 			path = MiseEnPlace/Services;
@@ -254,6 +257,7 @@
 				058428C8BF4F4F7229504B6B /* MealCard.swift in Sources */,
 				CCBC73DEE144BD79209415A3 /* MealDetailView.swift in Sources */,
 				65DC7CFADBF0BA33B420C3A6 /* MealImage.swift in Sources */,
+				98A19D4924260BF40765EF0C /* MealSuggestionService.swift in Sources */,
 				1028BA20BB193DA287D478E9 /* MiseEnPlaceApp.swift in Sources */,
 				2D1748965F9FEA6B75CEE521 /* PantryView.swift in Sources */,
 				69F534DD88D0CC25BBE2737D /* PlannerView.swift in Sources */,
