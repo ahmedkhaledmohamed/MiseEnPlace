@@ -28,7 +28,7 @@ generate_jwt() {
     echo "${unsigned}.${signature}"
 }
 
-echo "=== Uploading Cooknect to TestFlight ==="
+echo "=== Uploading Potluck to TestFlight ==="
 
 # Step 1: Generate project
 echo "→ Generating Xcode project..."
