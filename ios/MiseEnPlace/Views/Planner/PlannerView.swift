@@ -5,9 +5,11 @@ struct PlannerView: View {
     @Environment(\.modelContext) private var context
     @Query private var allMeals: [Meal]
     @Query private var entries: [PlanEntry]
+    @Query private var similarities: [MealSimilarity]
     @State private var budget: Double = 80.0
     @State private var showBudgetEditor = false
     @State private var addingSlot: SlotSelection? = nil
+    @State private var showSuggestions = false
 
     private let days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
@@ -74,7 +76,29 @@ struct PlannerView: View {
                         }
                     }
                     .padding(.horizontal)
-                    .padding(.bottom, 20)
+                    .padding(.bottom, 12)
+                }
+
+                Button {
+                    showSuggestions.toggle()
+                } label: {
+                    HStack {
+                        Image(systemName: "sparkles")
+                        Text(showSuggestions ? "Hide suggestions" : "Suggest meals")
+                            .fontWeight(.medium)
+                    }
+                    .font(.subheadline)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(Theme.accent.opacity(0.15))
+                    .foregroundStyle(Theme.accent)
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                }
+                .padding(.horizontal)
+                .padding(.bottom, 8)
+
+                if showSuggestions {
+                    suggestionsSection
                 }
             }
             .background(Theme.bg)
@@ -90,6 +114,66 @@ struct PlannerView: View {
                 )
             }
         }
+    }
+
+    private var suggestionsSection: some View {
+        let plannedIds = Set(weekEntries.map(\.mealId))
+        let suggestions = MealSuggestionService.suggest(
+            for: plannedIds, allMeals: allMeals, similarities: similarities,
+            budget: budget, currentCost: groceryCost
+        )
+
+        return VStack(alignment: .leading, spacing: 8) {
+            ForEach(suggestions) { suggestion in
+                HStack(spacing: 10) {
+                    MealImage(imageUrl: suggestion.meal.imageUrl, cuisine: suggestion.meal.cuisine, height: 56)
+                        .frame(width: 56)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(suggestion.meal.name)
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .lineLimit(1)
+                        Text(suggestion.reason)
+                            .font(.caption2)
+                            .foregroundStyle(Theme.accent)
+                            .lineLimit(2)
+                    }
+
+                    Spacer()
+
+                    Button {
+                        let emptySlots = findEmptySlot()
+                        let entry = PlanEntry(
+                            mealId: suggestion.meal.id,
+                            dayIndex: emptySlots.day,
+                            mealSlot: emptySlots.slot,
+                            weekStart: weekStart
+                        )
+                        context.insert(entry)
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title3)
+                            .foregroundStyle(Theme.accent)
+                    }
+                }
+                .padding(.horizontal)
+            }
+        }
+        .padding(.bottom, 12)
+    }
+
+    private func findEmptySlot() -> (day: Int, slot: String) {
+        let slots = ["dinner", "lunch", "breakfast"]
+        for day in 0..<7 {
+            for slot in slots {
+                if !weekEntries.contains(where: { $0.dayIndex == day && $0.mealSlot == slot }) {
+                    return (day, slot)
+                }
+            }
+        }
+        return (0, "dinner")
     }
 }
 
