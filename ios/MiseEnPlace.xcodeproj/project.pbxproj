@@ -24,6 +24,7 @@
 		DA815B567A705775665E1303 /* meals.json in Resources */ = {isa = PBXBuildFile; fileRef = 9234DFD7AE4BD6A7A0CE5E04 /* meals.json */; };
 		EC47806B74BCBC178E9A1DF3 /* Meal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D0D82DC17756A73FA734D67 /* Meal.swift */; };
 		EFC88BCC68DCB58E539BC180 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B6CE0867665B07C932FEBF3 /* Theme.swift */; };
+		FEE31488CB4573B9F4ECC967 /* SimilarMealsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80ED54D1556BE6E9B6EC980E /* SimilarMealsCard.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -38,6 +39,7 @@
 		55E80F8C361D56A15B72B452 /* .gitkeep */ = {isa = PBXFileReference; path = .gitkeep; sourceTree = "<group>"; };
 		676D0758CB789AFDCCC3AEC0 /* FeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedView.swift; sourceTree = "<group>"; };
 		770D7E6AF7EAF44545757F3B /* MealActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealActions.swift; sourceTree = "<group>"; };
+		80ED54D1556BE6E9B6EC980E /* SimilarMealsCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimilarMealsCard.swift; sourceTree = "<group>"; };
 		8BB5021371C3210E1686FDEE /* DataSeeder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataSeeder.swift; sourceTree = "<group>"; };
 		9234DFD7AE4BD6A7A0CE5E04 /* meals.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = meals.json; sourceTree = "<group>"; };
 		9A119A8D4D9AEE12B4951C34 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -163,6 +165,7 @@
 				4FA82763CE5BD5D5F62271C0 /* FavoritesView.swift */,
 				676D0758CB789AFDCCC3AEC0 /* FeedView.swift */,
 				D92C1630BF2BB302B00949FB /* MealCard.swift */,
+				80ED54D1556BE6E9B6EC980E /* SimilarMealsCard.swift */,
 			);
 			path = Feed;
 			sourceTree = "<group>";
@@ -251,6 +254,7 @@
 				1028BA20BB193DA287D478E9 /* MiseEnPlaceApp.swift in Sources */,
 				69F534DD88D0CC25BBE2737D /* PlannerView.swift in Sources */,
 				9F6D760E25DD2ED2D49201A2 /* SignInSheet.swift in Sources */,
+				FEE31488CB4573B9F4ECC967 /* SimilarMealsCard.swift in Sources */,
 				54D19FB76A0265967520D60E /* SimilarMealsRow.swift in Sources */,
 				2BECB50BC4E472DD11F9E59E /* StatBadge.swift in Sources */,
 				EFC88BCC68DCB58E539BC180 /* Theme.swift in Sources */,

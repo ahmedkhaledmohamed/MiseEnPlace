@@ -4,7 +4,6 @@ import SwiftData
 struct MealDetailView: View {
     let mealId: String
     @Query private var meals: [Meal]
-    @Query private var similarities: [MealSimilarity]
     @State private var showAddToPlan = false
 
     init(mealId: String) {
@@ -13,14 +12,6 @@ struct MealDetailView: View {
     }
 
     private var meal: Meal? { meals.first }
-
-    private var similarMealIds: [String] {
-        similarities
-            .filter { $0.mealAId == mealId || $0.mealBId == mealId }
-            .sorted { $0.overlapRatio > $1.overlapRatio }
-            .prefix(8)
-            .map { $0.mealAId == mealId ? $0.mealBId : $0.mealAId }
-    }
 
     var body: some View {
         Group {
@@ -178,10 +169,8 @@ struct MealDetailView: View {
 
     @ViewBuilder
     private func similarSection() -> some View {
-        if !similarMealIds.isEmpty {
-            SectionHeader(title: "Similar Meals")
-            SimilarMealsRow(mealIds: similarMealIds)
-        }
+        SectionHeader(title: "You might also like")
+        SimilarMealsRow(mealId: mealId)
     }
 
     @ViewBuilder

@@ -36,9 +36,15 @@ struct FeedView: View {
                     LazyVStack(spacing: 2) {
                         Color.clear.frame(height: headerVisible ? 60 : 0)
 
-                        ForEach(filteredMeals, id: \.id) { meal in
+                        ForEach(Array(filteredMeals.enumerated()), id: \.element.id) { index, meal in
                             MealCard(meal: meal) {
                                 navigationPath.append(meal.id)
+                            }
+
+                            if index % 3 == 2 {
+                                SimilarMealsCard(meal: meal) { mealId in
+                                    navigationPath.append(mealId)
+                                }
                             }
                         }
                     }
