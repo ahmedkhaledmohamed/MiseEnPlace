@@ -55,12 +55,13 @@ struct FeedView: View {
                 .coordinateSpace(name: "scroll")
                 .onPreferenceChange(ScrollOffsetKey.self) { offset in
                     let delta = offset - lastScrollOffset
-                    if delta < -8 && headerVisible {
-                        withAnimation(.easeOut(duration: 0.2)) { headerVisible = false }
-                    } else if delta > 8 && !headerVisible {
-                        withAnimation(.easeOut(duration: 0.2)) { headerVisible = true }
+                    if delta < -40 && headerVisible {
+                        withAnimation(.easeOut(duration: 0.25)) { headerVisible = false }
+                        lastScrollOffset = offset
+                    } else if delta > 30 && !headerVisible {
+                        withAnimation(.easeOut(duration: 0.25)) { headerVisible = true }
+                        lastScrollOffset = offset
                     }
-                    lastScrollOffset = offset
                 }
 
                 if headerVisible {
