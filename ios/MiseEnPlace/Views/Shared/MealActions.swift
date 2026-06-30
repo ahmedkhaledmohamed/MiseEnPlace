@@ -19,32 +19,25 @@ struct MealActions: View {
 
     var body: some View {
         HStack(spacing: 18) {
-            Button { gated { toggleFavorite() } } label: {
-                Image(systemName: isFavorited ? "heart.fill" : "heart")
-                    .font(.system(size: iconSize))
-                    .foregroundStyle(isFavorited ? .red : tint)
-                    .contentTransition(.symbolEffect(.replace))
+            actionButton(
+                icon: isFavorited ? "heart.fill" : "heart",
+                color: isFavorited ? .red : tint
+            ) { toggleFavorite() }
+
+            actionButton(icon: "calendar.badge.plus", color: tint) {
+                showAddToPlan = true
             }
 
-            Button { gated { showAddToPlan = true } } label: {
-                Image(systemName: "calendar.badge.plus")
-                    .font(.system(size: iconSize))
-                    .foregroundStyle(tint)
-            }
-
-            Button { gated { shareAction() } } label: {
-                Image(systemName: "paperplane")
-                    .font(.system(size: iconSize))
-                    .foregroundStyle(tint)
+            actionButton(icon: "paperplane", color: tint) {
+                shareAction()
             }
 
             Spacer()
 
-            Button { gated { toggleFavorite() } } label: {
-                Image(systemName: isFavorited ? "bookmark.fill" : "bookmark")
-                    .font(.system(size: iconSize))
-                    .foregroundStyle(isFavorited ? Theme.accent : tint)
-            }
+            actionButton(
+                icon: isFavorited ? "bookmark.fill" : "bookmark",
+                color: isFavorited ? Theme.accent : tint
+            ) { toggleFavorite() }
         }
         .sheet(isPresented: $showAddToPlan) {
             AddToPlanSheet(meal: meal)
@@ -59,6 +52,20 @@ struct MealActions: View {
                 }
             }
         }
+    }
+
+    @ViewBuilder
+    private func actionButton(icon: String, color: Color, action: @escaping () -> Void) -> some View {
+        Button {
+            gated(action)
+        } label: {
+            Image(systemName: icon)
+                .font(.system(size: iconSize))
+                .foregroundStyle(color)
+                .frame(width: 44, height: 44)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     private func gated(_ action: @escaping () -> Void) {
