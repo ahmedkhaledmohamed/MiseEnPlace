@@ -26,6 +26,7 @@ targets:
     info:
       path: MiseEnPlace/Info.plist
       properties:
+        CFBundleName: Potluck
         CFBundleDisplayName: Potluck
         CFBundleShortVersionString: "1.0.0"
         CFBundleVersion: "1"
