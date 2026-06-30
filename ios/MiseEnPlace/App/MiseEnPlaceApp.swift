@@ -25,19 +25,24 @@ struct ContentView: View {
                     Label("Feed", systemImage: "house.fill")
                 }
 
+            PantryView()
+                .tabItem {
+                    Label("Cook", systemImage: "frying.pan")
+                }
+
             FavoritesView()
                 .tabItem {
-                    Label("Favorites", systemImage: "heart.fill")
+                    Label("Saved", systemImage: "heart.fill")
                 }
 
             PlannerView()
                 .tabItem {
-                    Label("Planner", systemImage: "calendar")
+                    Label("Plan", systemImage: "calendar")
                 }
 
             GroceryListView()
                 .tabItem {
-                    Label("Grocery", systemImage: "cart.fill")
+                    Label("Shop", systemImage: "cart.fill")
                 }
         }
         .preferredColorScheme(.dark)

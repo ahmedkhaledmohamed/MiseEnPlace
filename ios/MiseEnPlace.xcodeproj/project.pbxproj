@@ -12,6 +12,7 @@
 		1028BA20BB193DA287D478E9 /* MiseEnPlaceApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39B5966047465780F3607801 /* MiseEnPlaceApp.swift */; };
 		132EBCFAD3CA92CD768297A4 /* DataSeeder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BB5021371C3210E1686FDEE /* DataSeeder.swift */; };
 		2BECB50BC4E472DD11F9E59E /* StatBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0447F1C3A4CB53D43F23837 /* StatBadge.swift */; };
+		2D1748965F9FEA6B75CEE521 /* PantryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC90B6A6A1FEF0F578D6DB76 /* PantryView.swift */; };
 		54D19FB76A0265967520D60E /* SimilarMealsRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F02726735CA5AA1184A5356 /* SimilarMealsRow.swift */; };
 		56167BC8E90F8EAB33C05F0C /* FavoritesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FA82763CE5BD5D5F62271C0 /* FavoritesView.swift */; };
 		5FD1B1DB0BAF4B25D3CE28B4 /* GroceryListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BC08452911B2D19339C4A6F /* GroceryListView.swift */; };
@@ -45,6 +46,7 @@
 		9A119A8D4D9AEE12B4951C34 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9B6CE0867665B07C932FEBF3 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		A0447F1C3A4CB53D43F23837 /* StatBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatBadge.swift; sourceTree = "<group>"; };
+		CC90B6A6A1FEF0F578D6DB76 /* PantryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PantryView.swift; sourceTree = "<group>"; };
 		D92C1630BF2BB302B00949FB /* MealCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealCard.swift; sourceTree = "<group>"; };
 		E04158DC68B74C07EC62CD8D /* MealImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealImage.swift; sourceTree = "<group>"; };
 		EB3203268AA3E9C98C2DE327 /* MealDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealDetailView.swift; sourceTree = "<group>"; };
@@ -165,6 +167,7 @@
 				4FA82763CE5BD5D5F62271C0 /* FavoritesView.swift */,
 				676D0758CB789AFDCCC3AEC0 /* FeedView.swift */,
 				D92C1630BF2BB302B00949FB /* MealCard.swift */,
+				CC90B6A6A1FEF0F578D6DB76 /* PantryView.swift */,
 				80ED54D1556BE6E9B6EC980E /* SimilarMealsCard.swift */,
 			);
 			path = Feed;
@@ -252,6 +255,7 @@
 				CCBC73DEE144BD79209415A3 /* MealDetailView.swift in Sources */,
 				65DC7CFADBF0BA33B420C3A6 /* MealImage.swift in Sources */,
 				1028BA20BB193DA287D478E9 /* MiseEnPlaceApp.swift in Sources */,
+				2D1748965F9FEA6B75CEE521 /* PantryView.swift in Sources */,
 				69F534DD88D0CC25BBE2737D /* PlannerView.swift in Sources */,
 				9F6D760E25DD2ED2D49201A2 /* SignInSheet.swift in Sources */,
 				FEE31488CB4573B9F4ECC967 /* SimilarMealsCard.swift in Sources */,
