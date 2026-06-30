@@ -10,6 +10,8 @@ struct FeedView: View {
     @State private var selectedType: String?
     @State private var selectedDifficulty: String?
     @State private var navigationPath = NavigationPath()
+    @State private var headerVisible = true
+    @State private var lastScrollOffset: CGFloat = 0
 
     private var filteredMeals: [Meal] {
         allMeals.filter { meal in
@@ -29,11 +31,11 @@ struct FeedView: View {
 
     var body: some View {
         NavigationStack(path: $navigationPath) {
-            VStack(spacing: 0) {
-                feedHeader
-
+            ZStack(alignment: .top) {
                 ScrollView {
                     LazyVStack(spacing: 2) {
+                        Color.clear.frame(height: headerVisible ? 60 : 0)
+
                         ForEach(filteredMeals, id: \.id) { meal in
                             MealCard(meal: meal) {
                                 navigationPath.append(meal.id)
@@ -41,6 +43,30 @@ struct FeedView: View {
                         }
                     }
                     .padding(.bottom, 20)
+                    .background(
+                        GeometryReader { geo in
+                            Color.clear.preference(
+                                key: ScrollOffsetKey.self,
+                                value: geo.frame(in: .named("scroll")).minY
+                            )
+                        }
+                    )
+                }
+                .coordinateSpace(name: "scroll")
+                .onPreferenceChange(ScrollOffsetKey.self) { offset in
+                    let delta = offset - lastScrollOffset
+                    if delta < -8 && headerVisible {
+                        withAnimation(.easeOut(duration: 0.2)) { headerVisible = false }
+                    } else if delta > 8 && !headerVisible {
+                        withAnimation(.easeOut(duration: 0.2)) { headerVisible = true }
+                    }
+                    lastScrollOffset = offset
+                }
+
+                if headerVisible {
+                    feedHeader
+                        .background(Theme.bg)
+                        .transition(.move(edge: .top).combined(with: .opacity))
                 }
             }
             .background(Theme.bg)
@@ -161,5 +187,12 @@ struct FeedView: View {
 
     private var difficulties: [String] {
         ["easy", "medium", "advanced", "project"]
+    }
+}
+
+private struct ScrollOffsetKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
     }
 }
