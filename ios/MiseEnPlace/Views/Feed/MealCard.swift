@@ -61,6 +61,8 @@ struct MealCard: View {
                     .font(.subheadline)
                     .foregroundStyle(Theme.text)
                     .lineLimit(2)
+                    .contentShape(Rectangle())
+                    .onTapGesture { onTap?() }
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
