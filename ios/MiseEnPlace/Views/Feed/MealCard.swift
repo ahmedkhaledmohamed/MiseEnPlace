@@ -57,12 +57,15 @@ struct MealCard: View {
             VStack(alignment: .leading, spacing: 8) {
                 MealActions(meal: meal, iconSize: 22, tint: Theme.text)
 
-                Text(meal.desc)
-                    .font(.subheadline)
-                    .foregroundStyle(Theme.text)
-                    .lineLimit(2)
-                    .contentShape(Rectangle())
-                    .onTapGesture { onTap?() }
+                Button { onTap?() } label: {
+                    Text(meal.desc)
+                        .font(.subheadline)
+                        .foregroundStyle(Theme.text)
+                        .lineLimit(2)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
