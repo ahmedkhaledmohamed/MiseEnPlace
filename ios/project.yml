@@ -40,3 +40,4 @@ targets:
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
         UIUserInterfaceStyle: Dark
+        ITSAppUsesNonExemptEncryption: false
