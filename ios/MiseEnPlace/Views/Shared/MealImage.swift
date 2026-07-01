@@ -7,31 +7,27 @@ struct MealImage: View {
 
     var body: some View {
         if let urlString = imageUrl, let url = URL(string: urlString) {
-            AsyncImage(url: url) { phase in
+            AsyncImage(url: url, transaction: Transaction(animation: nil)) { phase in
                 switch phase {
                 case .success(let image):
                     image
                         .resizable()
                         .aspectRatio(contentMode: .fill)
-                        .frame(height: height)
-                        .clipped()
                 case .failure:
-                    placeholder
+                    placeholderContent
                 default:
-                    placeholder
-                        .overlay {
-                            ProgressView()
-                                .tint(Theme.textMuted)
-                        }
+                    placeholderContent
                 }
             }
             .frame(height: height)
+            .clipped()
         } else {
-            placeholder
+            placeholderContent
+                .frame(height: height)
         }
     }
 
-    private var placeholder: some View {
+    private var placeholderContent: some View {
         ZStack {
             LinearGradient(
                 colors: [
@@ -41,9 +37,6 @@ struct MealImage: View {
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
-            Image(systemName: "fork.knife")
-                .font(.system(size: 40))
-                .foregroundStyle(Theme.textMuted.opacity(0.4))
         }
         .frame(height: height)
     }
