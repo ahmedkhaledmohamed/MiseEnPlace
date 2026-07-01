@@ -10,7 +10,7 @@ struct FeedView: View {
     @State private var selectedType: String?
     @State private var selectedDifficulty: String?
     @State private var navigationPath = NavigationPath()
-    @State private var headerVisible = true
+    @State private var headerOffset: CGFloat = 0
     @State private var lastScrollOffset: CGFloat = 0
 
     private var filteredMeals: [Meal] {
@@ -31,14 +31,11 @@ struct FeedView: View {
 
     var body: some View {
         NavigationStack(path: $navigationPath) {
-            VStack(spacing: 0) {
-                if headerVisible {
-                    feedHeader
-                        .transition(.move(edge: .top).combined(with: .opacity))
-                }
-
+            ZStack(alignment: .top) {
                 ScrollView {
                     LazyVStack(spacing: 2) {
+                        Color.clear.frame(height: 60)
+
                         ForEach(Array(filteredMeals.enumerated()), id: \.element.id) { index, meal in
                             MealCard(meal: meal) {
                                 navigationPath.append(meal.id)
@@ -52,25 +49,22 @@ struct FeedView: View {
                         }
                     }
                     .padding(.bottom, 20)
-                    .overlay(
-                        GeometryReader { geo -> Color in
-                            let offset = geo.frame(in: .global).minY
-                            DispatchQueue.main.async {
-                                let delta = offset - lastScrollOffset
-                                if abs(delta) > 2 {
-                                    if delta < -50 && headerVisible {
-                                        withAnimation(.easeOut(duration: 0.25)) { headerVisible = false }
-                                        lastScrollOffset = offset
-                                    } else if delta > 40 && !headerVisible {
-                                        withAnimation(.easeOut(duration: 0.25)) { headerVisible = true }
-                                        lastScrollOffset = offset
-                                    }
-                                }
-                            }
-                            return Color.clear
+                    .background(
+                        GeometryReader { geo in
+                            Color.clear
+                                .preference(key: ScrollOffsetKey.self, value: geo.frame(in: .named("feed")).minY)
                         }
                     )
                 }
+                .coordinateSpace(name: "feed")
+                .onPreferenceChange(ScrollOffsetKey.self) { value in
+                    handleScroll(value)
+                }
+
+                feedHeader
+                    .background(Theme.bg)
+                    .offset(y: headerOffset)
+                    .animation(.easeInOut(duration: 0.3), value: headerOffset)
             }
             .background(Theme.bg)
             .navigationBarHidden(true)
@@ -190,5 +184,25 @@ struct FeedView: View {
 
     private var difficulties: [String] {
         ["easy", "medium", "advanced", "project"]
+    }
+
+    private func handleScroll(_ offset: CGFloat) {
+        let delta = offset - lastScrollOffset
+        guard abs(delta) > 3 else { return }
+
+        if delta < 0 {
+            headerOffset = max(-80, headerOffset + delta * 0.5)
+        } else {
+            headerOffset = min(0, headerOffset + delta * 0.5)
+        }
+
+        lastScrollOffset = offset
+    }
+}
+
+private struct ScrollOffsetKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
     }
 }
