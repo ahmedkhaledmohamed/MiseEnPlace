@@ -55,7 +55,7 @@ struct SimilarityJSON: Codable {
 }
 
 enum DataSeeder {
-    private static let dataVersion = 2
+    private static let dataVersion = 3
 
     static func seedIfNeeded(context: ModelContext) {
         let currentVersion = UserDefaults.standard.integer(forKey: "dataVersion")

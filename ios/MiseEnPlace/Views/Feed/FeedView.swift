@@ -1,52 +1,22 @@
 import SwiftUI
 import SwiftData
 
-struct SeededRNG: RandomNumberGenerator {
-    private var state: UInt64
-    init(seed: UInt64) { self.state = seed }
-    mutating func next() -> UInt64 {
-        state &+= 0x9e3779b97f4a7c15
-        var z = state
-        z = (z ^ (z >> 30)) &* 0xbf58476d1ce4e5b9
-        z = (z ^ (z >> 27)) &* 0x94d049bb133111eb
-        return z ^ (z >> 31)
-    }
-}
-
 struct FeedView: View {
     @Environment(\.modelContext) private var context
+    @Environment(\.scenePhase) private var scenePhase
     @Query private var allMeals: [Meal]
-    @Query private var seenMeals: [SeenMeal]
     @State private var searchText = ""
     @State private var showSearch = false
     @State private var selectedCuisine: String?
     @State private var selectedType: String?
     @State private var selectedDifficulty: String?
     @State private var navigationPath = NavigationPath()
-    @State private var sessionSeed: UInt64 = UInt64.random(in: 0...UInt64.max)
-
-    private var orderedMeals: [Meal] {
-        let seenIds = Set(seenMeals.map(\.mealId))
-
-        var unseen = allMeals.filter { !seenIds.contains($0.id) }
-        var seen = allMeals.filter { seenIds.contains($0.id) }
-
-        if unseen.isEmpty {
-            try? context.delete(model: SeenMeal.self)
-            unseen = allMeals
-            seen = []
-        }
-
-        var rng = SeededRNG(seed: sessionSeed)
-        unseen.shuffle(using: &rng)
-        var rng2 = SeededRNG(seed: sessionSeed &+ 1)
-        seen.shuffle(using: &rng2)
-
-        return unseen + seen
-    }
+    @State private var firstVisibleId: String?
+    @AppStorage("feedScrollPosition") private var savedPosition: String = ""
+    @AppStorage("lastActiveTimestamp") private var lastActive: Double = 0
 
     private var filteredMeals: [Meal] {
-        orderedMeals.filter { meal in
+        allMeals.filter { meal in
             if !searchText.isEmpty {
                 let q = searchText.lowercased()
                 guard meal.name.lowercased().contains(q) ||
@@ -66,16 +36,25 @@ struct FeedView: View {
             VStack(spacing: 0) {
                 feedHeader
 
-                ScrollView {
-                    LazyVStack(spacing: 2) {
-                        ForEach(filteredMeals, id: \.id) { meal in
-                            MealCard(meal: meal) {
-                                navigationPath.append(meal.id)
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        LazyVStack(spacing: 2) {
+                            ForEach(Array(filteredMeals.enumerated()), id: \.element.id) { index, meal in
+                                MealCard(meal: meal) {
+                                    navigationPath.append(meal.id)
+                                }
+                                .id(meal.id)
+                                .onAppear {
+                                    firstVisibleId = meal.id
+                                    prefetchImages(around: index)
+                                }
                             }
-                            .onAppear { markSeen(meal) }
                         }
+                        .padding(.bottom, 20)
                     }
-                    .padding(.bottom, 20)
+                    .onAppear {
+                        restoreScrollPosition(proxy: proxy)
+                    }
                 }
             }
             .background(Theme.bg)
@@ -83,12 +62,42 @@ struct FeedView: View {
             .navigationDestination(for: String.self) { mealId in
                 MealDetailView(mealId: mealId)
             }
+            .onChange(of: scenePhase) { _, phase in
+                if phase == .background || phase == .inactive {
+                    saveScrollPosition()
+                }
+            }
         }
     }
 
-    private func markSeen(_ meal: Meal) {
-        guard !seenMeals.contains(where: { $0.mealId == meal.id }) else { return }
-        context.insert(SeenMeal(mealId: meal.id))
+    private func saveScrollPosition() {
+        if let id = firstVisibleId {
+            savedPosition = id
+            lastActive = Date().timeIntervalSince1970
+        }
+    }
+
+    private func restoreScrollPosition(proxy: ScrollViewProxy) {
+        let now = Date().timeIntervalSince1970
+        let stale = (now - lastActive) > 86400
+
+        if !stale && !savedPosition.isEmpty {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                proxy.scrollTo(savedPosition, anchor: .top)
+            }
+        } else {
+            savedPosition = ""
+        }
+    }
+
+    private func prefetchImages(around index: Int) {
+        let meals = filteredMeals
+        for i in (index + 1)...(index + 4) {
+            guard i < meals.count,
+                  let urlString = meals[i].imageUrl,
+                  let url = URL(string: urlString) else { continue }
+            URLSession.shared.dataTask(with: url) { _, _, _ in }.resume()
+        }
     }
 
     private var feedHeader: some View {
