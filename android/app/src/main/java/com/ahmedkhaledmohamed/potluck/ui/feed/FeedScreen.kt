@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -17,13 +18,15 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ahmedkhaledmohamed.potluck.ui.theme.PotluckColors
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FeedScreen(
     onMealClick: (String) -> Unit,
     viewModel: FeedViewModel = hiltViewModel()
 ) {
-    val meals by viewModel.allMeals.collectAsStateWithLifecycle(initialValue = emptyList())
+    val meals by viewModel.rankedMeals.collectAsStateWithLifecycle()
     val searchText by viewModel.searchText.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     var showSearch by remember { mutableStateOf(false) }
     val filtered = viewModel.filteredMeals(meals)
 
@@ -55,11 +58,17 @@ fun FeedScreen(
             )
         }
 
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(2.dp)
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = { viewModel.buildFeed() },
+            modifier = Modifier.fillMaxSize()
         ) {
-            items(filtered, key = { it.id }) { meal ->
-                MealCard(meal = meal, onClick = { onMealClick(meal.id) })
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                items(filtered, key = { it.id }) { meal ->
+                    MealCard(meal = meal, onClick = { onMealClick(meal.id) })
+                }
             }
         }
     }

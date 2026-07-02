@@ -5,8 +5,11 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface MealDao {
-    @Query("SELECT * FROM meals ORDER BY name")
+    @Query("SELECT * FROM meals")
     fun allMeals(): Flow<List<MealEntity>>
+
+    @Query("SELECT * FROM meals")
+    suspend fun allMealsList(): List<MealEntity>
 
     @Query("SELECT * FROM meals WHERE id = :id")
     suspend fun getMeal(id: String): MealEntity?
@@ -43,6 +46,9 @@ interface SimilarityDao {
 interface FavoriteDao {
     @Query("SELECT * FROM favorite_meals ORDER BY createdAt DESC")
     fun allFavorites(): Flow<List<FavoriteMealEntity>>
+
+    @Query("SELECT * FROM favorite_meals")
+    suspend fun allFavoritesList(): List<FavoriteMealEntity>
 
     @Query("SELECT EXISTS(SELECT 1 FROM favorite_meals WHERE mealId = :mealId)")
     fun isFavorited(mealId: String): Flow<Boolean>
