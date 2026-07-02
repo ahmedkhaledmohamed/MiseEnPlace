@@ -134,6 +134,16 @@ final class PlanEntry {
 }
 
 @Model
+final class SeenMeal {
+    @Attribute(.unique) var mealId: String
+    var seenAt: Date
+    init(mealId: String) {
+        self.mealId = mealId
+        self.seenAt = .now
+    }
+}
+
+@Model
 final class FavoriteMeal {
     @Attribute(.unique) var mealId: String
     var createdAt: Date

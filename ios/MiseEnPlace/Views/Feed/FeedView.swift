@@ -5,6 +5,8 @@ struct FeedView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.scenePhase) private var scenePhase
     @Query private var allMeals: [Meal]
+    @Query private var favorites: [FavoriteMeal]
+    @Query private var seenMeals: [SeenMeal]
     @State private var searchText = ""
     @State private var showSearch = false
     @State private var selectedCuisine: String?
@@ -12,11 +14,38 @@ struct FeedView: View {
     @State private var selectedDifficulty: String?
     @State private var navigationPath = NavigationPath()
     @State private var firstVisibleId: String?
+    @State private var feedSeed: UInt64 = UInt64.random(in: 0...UInt64.max)
     @AppStorage("feedScrollPosition") private var savedPosition: String = ""
     @AppStorage("lastActiveTimestamp") private var lastActive: Double = 0
 
+    private var rankedMeals: [Meal] {
+        let seenIds = Set(seenMeals.map(\.mealId))
+
+        let cuisineCounts = Dictionary(grouping: favorites, by: { fav in
+            allMeals.first { $0.id == fav.mealId }?.cuisine ?? ""
+        }).mapValues(\.count)
+
+        let typeCounts = Dictionary(grouping: favorites, by: { fav in
+            allMeals.first { $0.id == fav.mealId }?.mealType ?? ""
+        }).mapValues(\.count)
+
+        var rng = SeededRNG(seed: feedSeed)
+
+        let scored = allMeals.map { meal -> (Meal, Double) in
+            let cuisineAffinity = Double(cuisineCounts[meal.cuisine] ?? 0)
+            let typeAffinity = Double(typeCounts[meal.mealType] ?? 0)
+            let unseenBonus: Double = seenIds.contains(meal.id) ? 0 : 1
+            let jitter = Double(rng.next() % 1000) / 2000.0
+
+            let score = (cuisineAffinity * 3) + (typeAffinity * 2) + (unseenBonus * 1) + jitter
+            return (meal, score)
+        }
+
+        return scored.sorted { $0.1 > $1.1 }.map(\.0)
+    }
+
     private var filteredMeals: [Meal] {
-        allMeals.filter { meal in
+        rankedMeals.filter { meal in
             if !searchText.isEmpty {
                 let q = searchText.lowercased()
                 guard meal.name.lowercased().contains(q) ||
@@ -46,11 +75,15 @@ struct FeedView: View {
                                 .id(meal.id)
                                 .onAppear {
                                     firstVisibleId = meal.id
+                                    markSeen(meal)
                                     prefetchImages(around: index)
                                 }
                             }
                         }
                         .padding(.bottom, 20)
+                    }
+                    .refreshable {
+                        await refresh()
                     }
                     .onAppear {
                         restoreScrollPosition(proxy: proxy)
@@ -70,6 +103,18 @@ struct FeedView: View {
         }
     }
 
+    private func refresh() async {
+        feedSeed = UInt64.random(in: 0...UInt64.max)
+        savedPosition = ""
+        firstVisibleId = nil
+        try? await Task.sleep(for: .milliseconds(300))
+    }
+
+    private func markSeen(_ meal: Meal) {
+        guard !seenMeals.contains(where: { $0.mealId == meal.id }) else { return }
+        context.insert(SeenMeal(mealId: meal.id))
+    }
+
     private func saveScrollPosition() {
         if let id = firstVisibleId {
             savedPosition = id
@@ -81,12 +126,13 @@ struct FeedView: View {
         let now = Date().timeIntervalSince1970
         let stale = (now - lastActive) > 86400
 
-        if !stale && !savedPosition.isEmpty {
+        if stale {
+            savedPosition = ""
+            feedSeed = UInt64.random(in: 0...UInt64.max)
+        } else if !savedPosition.isEmpty {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                 proxy.scrollTo(savedPosition, anchor: .top)
             }
-        } else {
-            savedPosition = ""
         }
     }
 
@@ -210,5 +256,17 @@ struct FeedView: View {
 
     private var difficulties: [String] {
         ["easy", "medium", "advanced", "project"]
+    }
+}
+
+private struct SeededRNG: RandomNumberGenerator {
+    private var state: UInt64
+    init(seed: UInt64) { self.state = seed }
+    mutating func next() -> UInt64 {
+        state &+= 0x9e3779b97f4a7c15
+        var z = state
+        z = (z ^ (z >> 30)) &* 0xbf58476d1ce4e5b9
+        z = (z ^ (z >> 27)) &* 0x94d049bb133111eb
+        return z ^ (z >> 31)
     }
 }
