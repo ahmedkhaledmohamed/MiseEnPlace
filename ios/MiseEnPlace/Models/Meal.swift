@@ -145,6 +145,17 @@ final class FavoriteMeal {
 }
 
 @Model
+final class SeenMeal {
+    @Attribute(.unique) var mealId: String
+    var seenAt: Date
+
+    init(mealId: String) {
+        self.mealId = mealId
+        self.seenAt = .now
+    }
+}
+
+@Model
 final class PantryItem {
     @Attribute(.unique) var name: String
     var isStaple: Bool
