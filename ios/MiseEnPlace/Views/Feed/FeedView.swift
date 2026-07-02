@@ -1,18 +1,52 @@
 import SwiftUI
 import SwiftData
 
+struct SeededRNG: RandomNumberGenerator {
+    private var state: UInt64
+    init(seed: UInt64) { self.state = seed }
+    mutating func next() -> UInt64 {
+        state &+= 0x9e3779b97f4a7c15
+        var z = state
+        z = (z ^ (z >> 30)) &* 0xbf58476d1ce4e5b9
+        z = (z ^ (z >> 27)) &* 0x94d049bb133111eb
+        return z ^ (z >> 31)
+    }
+}
+
 struct FeedView: View {
     @Environment(\.modelContext) private var context
-    @Query(sort: \Meal.name) private var allMeals: [Meal]
+    @Query private var allMeals: [Meal]
+    @Query private var seenMeals: [SeenMeal]
     @State private var searchText = ""
     @State private var showSearch = false
     @State private var selectedCuisine: String?
     @State private var selectedType: String?
     @State private var selectedDifficulty: String?
     @State private var navigationPath = NavigationPath()
+    @State private var sessionSeed: UInt64 = UInt64.random(in: 0...UInt64.max)
+
+    private var orderedMeals: [Meal] {
+        let seenIds = Set(seenMeals.map(\.mealId))
+
+        var unseen = allMeals.filter { !seenIds.contains($0.id) }
+        var seen = allMeals.filter { seenIds.contains($0.id) }
+
+        if unseen.isEmpty {
+            try? context.delete(model: SeenMeal.self)
+            unseen = allMeals
+            seen = []
+        }
+
+        var rng = SeededRNG(seed: sessionSeed)
+        unseen.shuffle(using: &rng)
+        var rng2 = SeededRNG(seed: sessionSeed &+ 1)
+        seen.shuffle(using: &rng2)
+
+        return unseen + seen
+    }
 
     private var filteredMeals: [Meal] {
-        allMeals.filter { meal in
+        orderedMeals.filter { meal in
             if !searchText.isEmpty {
                 let q = searchText.lowercased()
                 guard meal.name.lowercased().contains(q) ||
@@ -38,6 +72,7 @@ struct FeedView: View {
                             MealCard(meal: meal) {
                                 navigationPath.append(meal.id)
                             }
+                            .onAppear { markSeen(meal) }
                         }
                     }
                     .padding(.bottom, 20)
@@ -49,6 +84,11 @@ struct FeedView: View {
                 MealDetailView(mealId: mealId)
             }
         }
+    }
+
+    private func markSeen(_ meal: Meal) {
+        guard !seenMeals.contains(where: { $0.mealId == meal.id }) else { return }
+        context.insert(SeenMeal(mealId: meal.id))
     }
 
     private var feedHeader: some View {
@@ -162,5 +202,4 @@ struct FeedView: View {
     private var difficulties: [String] {
         ["easy", "medium", "advanced", "project"]
     }
-
 }
