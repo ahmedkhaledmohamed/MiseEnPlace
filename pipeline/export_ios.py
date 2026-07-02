@@ -117,6 +117,10 @@ def export(db_path, out_path, images_dir=None):
             "sharedIngredients": shared,
         })
 
+    import random
+    random.seed(len(meals) * 7919)
+    random.shuffle(meals)
+
     output = {
         "meals": meals,
         "similarities": similarities,

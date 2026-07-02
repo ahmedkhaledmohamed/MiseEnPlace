@@ -10,7 +10,7 @@ struct MiseEnPlaceApp: App {
         .modelContainer(for: [
             Meal.self, MealIngredient.self, RecipeStep.self,
             MealSimilarity.self, PlanEntry.self, PantryItem.self,
-            FavoriteMeal.self, SeenMeal.self,
+            FavoriteMeal.self,
         ])
     }
 }
