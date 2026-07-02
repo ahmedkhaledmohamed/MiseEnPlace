@@ -6,7 +6,7 @@ struct FeedView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Query private var allMeals: [Meal]
     @Query private var favorites: [FavoriteMeal]
-    @Query private var seenMeals: [SeenMeal]
+    @State private var rankedMealIds: [String] = []
     @State private var searchText = ""
     @State private var showSearch = false
     @State private var selectedCuisine: String?
@@ -14,38 +14,18 @@ struct FeedView: View {
     @State private var selectedDifficulty: String?
     @State private var navigationPath = NavigationPath()
     @State private var firstVisibleId: String?
-    @State private var feedSeed: UInt64 = UInt64.random(in: 0...UInt64.max)
+    @State private var hasBuiltFeed = false
     @AppStorage("feedScrollPosition") private var savedPosition: String = ""
     @AppStorage("lastActiveTimestamp") private var lastActive: Double = 0
 
-    private var rankedMeals: [Meal] {
-        let seenIds = Set(seenMeals.map(\.mealId))
-
-        let cuisineCounts = Dictionary(grouping: favorites, by: { fav in
-            allMeals.first { $0.id == fav.mealId }?.cuisine ?? ""
-        }).mapValues(\.count)
-
-        let typeCounts = Dictionary(grouping: favorites, by: { fav in
-            allMeals.first { $0.id == fav.mealId }?.mealType ?? ""
-        }).mapValues(\.count)
-
-        var rng = SeededRNG(seed: feedSeed)
-
-        let scored = allMeals.map { meal -> (Meal, Double) in
-            let cuisineAffinity = Double(cuisineCounts[meal.cuisine] ?? 0)
-            let typeAffinity = Double(typeCounts[meal.mealType] ?? 0)
-            let unseenBonus: Double = seenIds.contains(meal.id) ? 0 : 1
-            let jitter = Double(rng.next() % 1000) / 2000.0
-
-            let score = (cuisineAffinity * 3) + (typeAffinity * 2) + (unseenBonus * 1) + jitter
-            return (meal, score)
-        }
-
-        return scored.sorted { $0.1 > $1.1 }.map(\.0)
+    private var orderedMeals: [Meal] {
+        if rankedMealIds.isEmpty { return allMeals }
+        let lookup = Dictionary(uniqueKeysWithValues: allMeals.map { ($0.id, $0) })
+        return rankedMealIds.compactMap { lookup[$0] }
     }
 
     private var filteredMeals: [Meal] {
-        rankedMeals.filter { meal in
+        orderedMeals.filter { meal in
             if !searchText.isEmpty {
                 let q = searchText.lowercased()
                 guard meal.name.lowercased().contains(q) ||
@@ -82,11 +62,19 @@ struct FeedView: View {
                         }
                         .padding(.bottom, 20)
                     }
-                    .refreshable {
-                        await refresh()
-                    }
+                    .refreshable { await refreshFeed() }
                     .onAppear {
-                        restoreScrollPosition(proxy: proxy)
+                        if !hasBuiltFeed && !allMeals.isEmpty {
+                            buildFeed()
+                            hasBuiltFeed = true
+                            restoreScrollPosition(proxy: proxy)
+                        }
+                    }
+                    .onChange(of: allMeals.count) { _, count in
+                        if count > 0 && !hasBuiltFeed {
+                            buildFeed()
+                            hasBuiltFeed = true
+                        }
                     }
                 }
             }
@@ -103,16 +91,49 @@ struct FeedView: View {
         }
     }
 
-    private func refresh() async {
-        feedSeed = UInt64.random(in: 0...UInt64.max)
+    private func buildFeed() {
+        let seenIds: Set<String> = {
+            let descriptor = FetchDescriptor<SeenMeal>()
+            let seen = (try? context.fetch(descriptor)) ?? []
+            return Set(seen.map(\.mealId))
+        }()
+
+        let cuisineCounts = Dictionary(grouping: favorites, by: { fav in
+            allMeals.first { $0.id == fav.mealId }?.cuisine ?? ""
+        }).mapValues(\.count)
+
+        let typeCounts = Dictionary(grouping: favorites, by: { fav in
+            allMeals.first { $0.id == fav.mealId }?.mealType ?? ""
+        }).mapValues(\.count)
+
+        var rng = SeededRNG(seed: UInt64.random(in: 0...UInt64.max))
+
+        let scored = allMeals.map { meal -> (String, Double) in
+            let ca = Double(cuisineCounts[meal.cuisine] ?? 0)
+            let ta = Double(typeCounts[meal.mealType] ?? 0)
+            let unseen: Double = seenIds.contains(meal.id) ? 0 : 1
+            let jitter = Double(rng.next() % 1000) / 2000.0
+            let score = (ca * 3) + (ta * 2) + (unseen * 1) + jitter
+            return (meal.id, score)
+        }
+
+        rankedMealIds = scored.sorted { $0.1 > $1.1 }.map(\.0)
+    }
+
+    private func refreshFeed() async {
+        buildFeed()
         savedPosition = ""
         firstVisibleId = nil
-        try? await Task.sleep(for: .milliseconds(300))
+        try? await Task.sleep(for: .milliseconds(200))
     }
 
     private func markSeen(_ meal: Meal) {
-        guard !seenMeals.contains(where: { $0.mealId == meal.id }) else { return }
-        context.insert(SeenMeal(mealId: meal.id))
+        let mealId = meal.id
+        let descriptor = FetchDescriptor<SeenMeal>(predicate: #Predicate<SeenMeal> { $0.mealId == mealId })
+        let exists = (try? context.fetchCount(descriptor)) ?? 0
+        if exists == 0 {
+            context.insert(SeenMeal(mealId: mealId))
+        }
     }
 
     private func saveScrollPosition() {
@@ -124,11 +145,8 @@ struct FeedView: View {
 
     private func restoreScrollPosition(proxy: ScrollViewProxy) {
         let now = Date().timeIntervalSince1970
-        let stale = (now - lastActive) > 86400
-
-        if stale {
+        if (now - lastActive) > 86400 {
             savedPosition = ""
-            feedSeed = UInt64.random(in: 0...UInt64.max)
         } else if !savedPosition.isEmpty {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                 proxy.scrollTo(savedPosition, anchor: .top)
@@ -151,9 +169,7 @@ struct FeedView: View {
             HStack {
                 Text("Potluck")
                     .font(.system(size: 28, weight: .bold, design: .serif))
-
                 Spacer()
-
                 Button {
                     withAnimation(.easeInOut(duration: 0.2)) {
                         showSearch.toggle()
@@ -165,7 +181,6 @@ struct FeedView: View {
                         .foregroundStyle(Theme.textMuted)
                         .frame(width: 36, height: 36)
                 }
-
                 filterMenu
             }
             .padding(.horizontal, 16)
@@ -195,42 +210,24 @@ struct FeedView: View {
             Section("Cuisine") {
                 Button("All Cuisines") { selectedCuisine = nil }
                 ForEach(cuisines, id: \.self) { c in
-                    Button {
-                        selectedCuisine = c
-                    } label: {
-                        if selectedCuisine == c {
-                            Label(c, systemImage: "checkmark")
-                        } else {
-                            Text(c)
-                        }
+                    Button { selectedCuisine = c } label: {
+                        if selectedCuisine == c { Label(c, systemImage: "checkmark") } else { Text(c) }
                     }
                 }
             }
             Section("Type") {
                 Button("All Types") { selectedType = nil }
                 ForEach(mealTypes, id: \.self) { t in
-                    Button {
-                        selectedType = t
-                    } label: {
-                        if selectedType == t {
-                            Label(t, systemImage: "checkmark")
-                        } else {
-                            Text(t)
-                        }
+                    Button { selectedType = t } label: {
+                        if selectedType == t { Label(t, systemImage: "checkmark") } else { Text(t) }
                     }
                 }
             }
             Section("Difficulty") {
                 Button("All") { selectedDifficulty = nil }
                 ForEach(difficulties, id: \.self) { d in
-                    Button {
-                        selectedDifficulty = d
-                    } label: {
-                        if selectedDifficulty == d {
-                            Label(d, systemImage: "checkmark")
-                        } else {
-                            Text(d)
-                        }
+                    Button { selectedDifficulty = d } label: {
+                        if selectedDifficulty == d { Label(d, systemImage: "checkmark") } else { Text(d) }
                     }
                 }
             }
@@ -245,18 +242,9 @@ struct FeedView: View {
     private var hasActiveFilter: Bool {
         selectedCuisine != nil || selectedType != nil || selectedDifficulty != nil
     }
-
-    private var cuisines: [String] {
-        Array(Set(allMeals.map(\.cuisine))).sorted()
-    }
-
-    private var mealTypes: [String] {
-        Array(Set(allMeals.map(\.mealType))).sorted()
-    }
-
-    private var difficulties: [String] {
-        ["easy", "medium", "advanced", "project"]
-    }
+    private var cuisines: [String] { Array(Set(allMeals.map(\.cuisine))).sorted() }
+    private var mealTypes: [String] { Array(Set(allMeals.map(\.mealType))).sorted() }
+    private var difficulties: [String] { ["easy", "medium", "advanced", "project"] }
 }
 
 private struct SeededRNG: RandomNumberGenerator {
